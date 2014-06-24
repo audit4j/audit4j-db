@@ -23,7 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.audit4j.core.dto.AuditEvent;
-import org.audit4j.core.dto.Element;
+import org.audit4j.core.dto.Field;
 
 /**
  * The Class HSQLAuditLogDao.
@@ -44,7 +44,7 @@ class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
 
         StringBuffer elements = new StringBuffer();
 
-        for (Element element : event.getEventElements()) {
+        for (Field element : event.getFields()) {
             elements.append(element.getName() + " " + element.getType() + ":" + element.getValue() + ", ");
         }
         StringBuffer query = new StringBuffer();
