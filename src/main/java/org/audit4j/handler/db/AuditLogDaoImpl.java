@@ -21,6 +21,8 @@ package org.audit4j.handler.db;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Date;
+import java.util.UUID;
 
 import org.audit4j.core.dto.AuditEvent;
 import org.audit4j.core.dto.Field;
@@ -30,8 +32,13 @@ import org.audit4j.core.dto.Field;
  * 
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
-class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
+final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
 
+    public static boolean initialized = false;
+    
+    public static AuditLogDao auditDao;
+    
+    private AuditLogDaoImpl(){}
     /*
      * (non-Javadoc)
      * 
@@ -41,32 +48,44 @@ class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
      */
     @Override
     public boolean writeEvent(AuditEvent event) throws SQLException {
-
+        String uuid;
+        String timestamp;
         StringBuffer elements = new StringBuffer();
+        
+        if (event.getUuid() == null) {
+            uuid=String.valueOf(UUID.randomUUID().getMostSignificantBits());
+        } else {
+            uuid = event.getUuid().toString();
+        }
+        
+        if (event.getTimestamp() == null) {
+            timestamp = new Date().toString();
+        } else {
+            timestamp = event.getTimestamp().toString();
+        }
+
 
         for (Field element : event.getFields()) {
             elements.append(element.getName() + " " + element.getType() + ":" + element.getValue() + ", ");
         }
         StringBuffer query = new StringBuffer();
-        query.append("insert into audit(auditId, uuid, timestamp, actor, origin, action, elements) ").append(
-                "values (?, ?, ?, ?, ?, ?, ?)");
+        query.append("insert into audit(uuid, timestamp, actor, origin, action, elements) ").append(
+                "values (?, ?, ?, ?, ?, ?)");
 
         PreparedStatement statement = getConnection().prepareStatement(query.toString());
-        statement.setInt(1, event.getAuditId());
-        statement.setString(2, event.getUuid().toString());
-        statement.setString(3, event.getTimestamp().toString());
-        statement.setString(4, event.getActor());
-        statement.setString(5, event.getOrigin());
-        statement.setString(6, event.getAction());
-        statement.setString(7, elements.toString());
+        statement.setString(1, uuid);
+        statement.setString(2, timestamp);
+        statement.setString(3, event.getActor());
+        statement.setString(4, event.getOrigin());
+        statement.setString(5, event.getAction());
+        statement.setString(6, elements.toString());
         return statement.execute();
     }
 
     @Override
     public boolean createAuditTableIFNotExist() throws SQLException {
         StringBuffer query = new StringBuffer("create table if not exists audit (");
-        query.append("auditId INT NOT NULL,");
-        query.append("uuid char(60) NOT NULL,");
+        query.append("uuid varchar(200) NOT NULL,");
         query.append("timestamp varchar(100) NOT NULL,");
         query.append("actor varchar(200) NOT NULL,");
         query.append("origin varchar(200),");
@@ -77,5 +96,16 @@ class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         getConnection().prepareStatement(query.toString()).execute();
         return true;
     }
-
+    
+    public static AuditLogDao getInstance() {
+        if (!initialized) {
+            synchronized (AuditLogDaoImpl.class) {
+                if (!initialized) {
+                    auditDao = new AuditLogDaoImpl();
+                    initialized = true;
+                }
+            }
+        }
+        return auditDao;
+    }
 }

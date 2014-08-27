@@ -27,7 +27,8 @@ import org.audit4j.core.handler.Handler;
 
 /**
  * The Class GeneralDatabaseAuditHandler.
- * 
+ *
+ * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
 public class DatabaseAuditHandler extends Handler {
 
@@ -79,7 +80,7 @@ public class DatabaseAuditHandler extends Handler {
         factory.setConnectionType(ConnectionFactory.POOLED_CONNECTION);
         factory.init();
 
-        AuditLogDao dao = new AuditLogDaoImpl();
+        AuditLogDao dao = AuditLogDaoImpl.getInstance();
         try {
             dao.createAuditTableIFNotExist();
         } catch (SQLException e) {
@@ -94,7 +95,7 @@ public class DatabaseAuditHandler extends Handler {
      */
     @Override
     public void handle() throws HandlerException {
-        AuditLogDao dao = new AuditLogDaoImpl();
+        AuditLogDao dao = AuditLogDaoImpl.getInstance();
         try {
             dao.writeEvent(getAuditEvent());
         } catch (SQLException e) {
@@ -104,20 +105,19 @@ public class DatabaseAuditHandler extends Handler {
 
     /**
      * Gets the embedded.
-     * 
+     *
      * @return the embedded
      */
-    String getEmbedded() {
+    public String getEmbedded() {
         return embedded;
     }
 
     /**
      * Sets the embedded.
-     * 
-     * @param embedded
-     *            the new embedded
+     *
+     * @param embedded the new embedded
      */
-    void setEmbedded(String embedded) {
+    public void setEmbedded(String embedded) {
         this.embedded = embedded;
     }
 
