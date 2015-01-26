@@ -1,7 +1,6 @@
 /*
  * Copyright 2014 Janith Bandara, This source is a part of Audit4j - 
  * An open-source audit platform for Enterprise java platform.
- * http://mechanizedspace.com/audit4j
  * http://audit4j.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,33 +18,15 @@
 
 package org.audit4j.handler.db;
 
-import java.sql.SQLException;
-
-import org.audit4j.core.dto.AuditEvent;
-import org.audit4j.core.exception.HandlerException;
-
 /**
- * The Interface AuditLogDao.
+ * The Enum ConnectionType
  *
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
-interface AuditLogDao {
+public enum ConnectionType {
 
-	/**
-	 * Write event.
-	 *
-	 * @param event the event
-	 * @return true, if successful
-	 * @throws SQLException the sQL exception
-	 * @throws HandlerException 
-	 */
-	boolean writeEvent(AuditEvent event) throws SQLException, HandlerException;
-	
-	/**
-	 * Creates the audit table if not exist.
-	 *
-	 * @return true, if successful
-	 * @throws SQLException the sQL exception
-	 */
-	boolean createAuditTableIFNotExist() throws SQLException;
+    /** The single. */
+    SINGLE, /** The pooled. */
+ POOLED, /** The jndi. */
+ JNDI;
 }

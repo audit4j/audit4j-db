@@ -29,69 +29,71 @@ import org.hsqldb.Server;
  */
 class HSQLEmbededDBServer extends EmbededDBServer {
 
-	/** The Constant driver. */
-	private static final String driver = "org.hsqldb.jdbcDriver";
+    /** The Constant driver. */
+    private static final String driver = "org.hsqldb.jdbcDriver";
 
-	private static final String networkProtol = "jdbc:hsqldb:hsql";
-	/** The instance. */
-	public static HSQLEmbededDBServer instance;
+    private static final String networkProtol = "jdbc:hsqldb:hsql";
+    /** The instance. */
+    public static HSQLEmbededDBServer instance;
 
-	/** The hsql server. */
-	private Server hsqlServer = null;
+    /** The hsql server. */
+    private Server hsqlServer = null;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.audit4j.core.handler.db.EmbededDBServer#start()
-	 */
-	@Override
-	void start() throws InitializationException {
-		if (hsqlServer == null) {
-			hsqlServer = new Server();
-			hsqlServer.setLogWriter(null);
-			hsqlServer.setSilent(true);
-			hsqlServer.setDatabaseName(0, EMBEDED_DB_NAME);
-			hsqlServer.setDatabasePath(0, "file:" + EMBEDED_DB_FILE_NAME + ";user=" + getUname() + ";password="
-					+ getPassword() + "");
-			hsqlServer.start();
-		}
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.audit4j.core.handler.db.EmbededDBServer#start()
+     */
+    @Override
+    void start() throws InitializationException {
+        if (hsqlServer == null) {
+            hsqlServer = new Server();
+            hsqlServer.setLogWriter(null);
+            hsqlServer.setSilent(true);
+            hsqlServer.setDatabaseName(0, EMBEDED_DB_NAME);
+            hsqlServer.setDatabasePath(0, "file:" + EMBEDED_DB_FILE_NAME + ";user=" + getUname() + ";password="
+                    + getPassword() + "");
+            hsqlServer.start();
+        }
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.audit4j.core.handler.db.EmbededDBServer#shutdown()
-	 */
-	@Override
-	void shutdown() {
-		hsqlServer.shutdown();
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.audit4j.core.handler.db.EmbededDBServer#shutdown()
+     */
+    @Override
+    void shutdown() {
+        hsqlServer.stop();
+        hsqlServer.shutdown();
+        hsqlServer = null;
+    }
 
-	/**
-	 * Gets the single instance of HSQLEmbededDBServer.
-	 * 
-	 * @return single instance of HSQLEmbededDBServer
-	 */
-	static EmbededDBServer getInstance() {
-		if (instance == null) {
-			instance = new HSQLEmbededDBServer();
-			return instance;
-		}
-		return instance;
-	}
+    /**
+     * Gets the single instance of HSQLEmbededDBServer.
+     * 
+     * @return single instance of HSQLEmbededDBServer
+     */
+    static EmbededDBServer getInstance() {
+        if (instance == null) {
+            instance = new HSQLEmbededDBServer();
+            return instance;
+        }
+        return instance;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.audit4j.core.handler.db.EmbededDBServer#getDriver()
-	 */
-	@Override
-	String getDriver() {
-		return driver;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.audit4j.core.handler.db.EmbededDBServer#getDriver()
+     */
+    @Override
+    String getDriver() {
+        return driver;
+    }
 
-	@Override
-	String getNetworkProtocol() {
-		return networkProtol;
-	}
+    @Override
+    String getNetworkProtocol() {
+        return networkProtol;
+    }
 }

@@ -1,7 +1,6 @@
 /*
  * Copyright 2014 Janith Bandara, This source is a part of Audit4j - 
  * An open-source audit platform for Enterprise java platform.
- * http://mechanizedspace.com/audit4j
  * http://audit4j.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +26,7 @@ import org.audit4j.core.handler.Handler;
 
 /**
  * The Class GeneralDatabaseAuditHandler.
- *
+ * 
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
 public class DatabaseAuditHandler extends Handler {
@@ -50,15 +49,32 @@ public class DatabaseAuditHandler extends Handler {
     /** The db_password. */
     private String db_password;
 
-    /*
-     * (non-Javadoc)
+    /** The db_connection_type. */
+    private String db_connection_type;
+
+    /** The db_jndi_datasource. */
+    private String db_jndi_datasource;
+
+    /** The Constant POOLED_CONNECTION. */
+    private static final String POOLED_CONNECTION = "pooled";
+
+    /** The Constant JNDI_CONNECTION. */
+    private static final String JNDI_CONNECTION = "jndi";
+
+    EmbededDBServer server;
+
+    ConnectionFactory factory;
+
+    /**
+     * Initialize database handler.
      * 
-     * @see org.audit4j.core.handler.Handler#init()
+     * @throws InitializationException
+     *             the initialization exception
      */
     @Override
     public void init() throws InitializationException {
-        if (null == embedded || "true".equals(embedded)) {
-            EmbededDBServer server = HSQLEmbededDBServer.getInstance();
+        if (null == embedded || "true".equalsIgnoreCase(embedded)) {
+            server = HSQLEmbededDBServer.getInstance();
             db_driver = server.getDriver();
             db_url = server.getNetworkProtocol() + "://localhost/audit4j";
             if (db_user == null) {
@@ -72,12 +88,21 @@ public class DatabaseAuditHandler extends Handler {
             server.start();
         }
 
-        ConnectionFactory factory = ConnectionFactory.getInstance();
+        factory = ConnectionFactory.getInstance();
         factory.setDriver(getDb_driver());
         factory.setUrl(getDb_url());
         factory.setUser(getDb_user());
         factory.setPassword(getDb_password());
-        factory.setConnectionType(ConnectionFactory.POOLED_CONNECTION);
+        factory.setJndiDataSource(getDb_jndi_datasource());
+
+        if (getDb_connection_type() != null && getDb_connection_type().equals(POOLED_CONNECTION)) {
+            factory.setConnectionType(ConnectionType.POOLED);
+        } else if (getDb_connection_type() != null && getDb_connection_type().equals(JNDI_CONNECTION)) {
+            factory.setConnectionType(ConnectionType.JNDI);
+        } else {
+            factory.setConnectionType(ConnectionType.SINGLE);
+        }
+
         factory.init();
 
         AuditLogDao dao = AuditLogDaoImpl.getInstance();
@@ -104,8 +129,36 @@ public class DatabaseAuditHandler extends Handler {
     }
 
     /**
+     * Shutdown database handler.
+     */
+    @Override
+    public void stop() {
+        server.shutdown();
+        factory.stop();
+    }
+
+    /**
+     * Gets the db_connection_type.
+     * 
+     * @return the db_connection_type
+     */
+    public String getDb_connection_type() {
+        return db_connection_type;
+    }
+
+    /**
+     * Sets the db_connection_type.
+     * 
+     * @param db_connection_type
+     *            the new db_connection_type
+     */
+    public void setDb_connection_type(String db_connection_type) {
+        this.db_connection_type = db_connection_type;
+    }
+
+    /**
      * Gets the embedded.
-     *
+     * 
      * @return the embedded
      */
     public String getEmbedded() {
@@ -114,8 +167,9 @@ public class DatabaseAuditHandler extends Handler {
 
     /**
      * Sets the embedded.
-     *
-     * @param embedded the new embedded
+     * 
+     * @param embedded
+     *            the new embedded
      */
     public void setEmbedded(String embedded) {
         this.embedded = embedded;
@@ -195,6 +249,25 @@ public class DatabaseAuditHandler extends Handler {
      */
     public void setDb_password(String db_password) {
         this.db_password = db_password;
+    }
+
+    /**
+     * Gets the db_jndi_datasource.
+     * 
+     * @return the db_jndi_datasource
+     */
+    public String getDb_jndi_datasource() {
+        return db_jndi_datasource;
+    }
+
+    /**
+     * Sets the db_jndi_datasource.
+     * 
+     * @param db_jndi_datasource
+     *            the new db_jndi_datasource
+     */
+    public void setDb_jndi_datasource(String db_jndi_datasource) {
+        this.db_jndi_datasource = db_jndi_datasource;
     }
 
 }

@@ -26,6 +26,8 @@ import java.util.UUID;
 
 import org.audit4j.core.dto.AuditEvent;
 import org.audit4j.core.dto.Field;
+import org.audit4j.core.exception.HandlerException;
+import org.audit4j.core.exception.InitializationException;
 
 /**
  * The Class HSQLAuditLogDao.
@@ -35,10 +37,12 @@ import org.audit4j.core.dto.Field;
 final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
 
     public static boolean initialized = false;
-    
+
     public static AuditLogDao auditDao;
-    
-    private AuditLogDaoImpl(){}
+
+    private AuditLogDaoImpl() {
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -47,23 +51,22 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
      * dto.AuditEvent)
      */
     @Override
-    public boolean writeEvent(AuditEvent event) throws SQLException {
+    public boolean writeEvent(AuditEvent event) throws HandlerException {
         String uuid;
         String timestamp;
         StringBuffer elements = new StringBuffer();
-        
+
         if (event.getUuid() == null) {
-            uuid=String.valueOf(UUID.randomUUID().getMostSignificantBits());
+            uuid = String.valueOf(UUID.randomUUID().getMostSignificantBits());
         } else {
             uuid = event.getUuid().toString();
         }
-        
+
         if (event.getTimestamp() == null) {
             timestamp = new Date().toString();
         } else {
             timestamp = event.getTimestamp().toString();
         }
-
 
         for (Field element : event.getFields()) {
             elements.append(element.getName() + " " + element.getType() + ":" + element.getValue() + ", ");
@@ -72,18 +75,36 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         query.append("insert into audit(uuid, timestamp, actor, origin, action, elements) ").append(
                 "values (?, ?, ?, ?, ?, ?)");
 
-        PreparedStatement statement = getConnection().prepareStatement(query.toString());
-        statement.setString(1, uuid);
-        statement.setString(2, timestamp);
-        statement.setString(3, event.getActor());
-        statement.setString(4, event.getOrigin());
-        statement.setString(5, event.getAction());
-        statement.setString(6, elements.toString());
-        return statement.execute();
+        PreparedStatement statement = null;
+        try {
+            statement = getConnection().prepareStatement(query.toString());
+            statement.setString(1, uuid);
+            statement.setString(2, timestamp);
+            statement.setString(3, event.getActor());
+            statement.setString(4, event.getOrigin());
+            statement.setString(5, event.getAction());
+            statement.setString(6, elements.toString());
+            statement.execute();
+        } catch (SQLException e) {
+            throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
+        } finally {
+            try {
+                super.getConnection().close();
+            } catch (SQLException e) {
+                throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
+            } finally {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
+                }
+            }
+        }
+        return true;
     }
 
     @Override
-    public boolean createAuditTableIFNotExist() throws SQLException {
+    public boolean createAuditTableIFNotExist() {
         StringBuffer query = new StringBuffer("create table if not exists audit (");
         query.append("uuid varchar(200) NOT NULL,");
         query.append("timestamp varchar(100) NOT NULL,");
@@ -93,10 +114,20 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         query.append("elements varchar(20000)");
         query.append(");");
 
-        getConnection().prepareStatement(query.toString()).execute();
+        try {
+            getConnection().prepareStatement(query.toString()).execute();
+        } catch (SQLException e) {
+            throw new InitializationException("SQL Exception: ", e);
+        } finally {
+            try {
+                super.getConnection().close();
+            } catch (SQLException e) {
+                throw new InitializationException("SQL Exception: ", e);
+            }
+        }
         return true;
     }
-    
+
     public static AuditLogDao getInstance() {
         if (!initialized) {
             synchronized (AuditLogDaoImpl.class) {
