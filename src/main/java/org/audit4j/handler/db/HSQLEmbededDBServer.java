@@ -1,7 +1,6 @@
 /*
  * Copyright 2014 Janith Bandara, This source is a part of Audit4j - 
  * An open-source audit platform for Enterprise java platform.
- * http://mechanizedspace.com/audit4j
  * http://audit4j.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +26,7 @@ import org.hsqldb.Server;
  * 
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
-class HSQLEmbededDBServer extends EmbededDBServer {
+final class HSQLEmbededDBServer extends EmbededDBServer {
 
     /** The Constant driver. */
     private static final String driver = "org.hsqldb.jdbcDriver";
@@ -38,6 +37,10 @@ class HSQLEmbededDBServer extends EmbededDBServer {
 
     /** The hsql server. */
     private Server hsqlServer = null;
+    
+    private HSQLEmbededDBServer(){
+        // Singalton private constructor.
+    }
 
     /*
      * (non-Javadoc)

@@ -118,6 +118,9 @@ final class ConnectionFactory {
      * @return the pooled connection
      */
     Connection getPooledConnection() {
+        if (cpds == null) {
+            throw new InitializationException("Could not obtain the db connection: Connection pool is null.");
+        }
         try {
             return cpds.getConnection();
         } catch (SQLException e) {

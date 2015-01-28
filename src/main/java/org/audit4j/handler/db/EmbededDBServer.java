@@ -23,83 +23,86 @@ import org.audit4j.core.exception.InitializationException;
 
 /**
  * The Class EmbededDBServer.
- *
+ * 
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
 public abstract class EmbededDBServer {
 
-	/** The Constant EMBEDED_DB_NAME. */
-	static final String EMBEDED_DB_NAME = "audit4j";
+    /** The Constant EMBEDED_DB_NAME. */
+    static final String EMBEDED_DB_NAME = "audit4j";
 
-	/** The Constant EMBEDED_DB_FILE_NAME. */
-	static final String EMBEDED_DB_FILE_NAME = "audit4jdb";
-	
-	/** The uname. */
-	private String uname;
+    /** The Constant EMBEDED_DB_FILE_NAME. */
+    static final String EMBEDED_DB_FILE_NAME = "audit4jdb";
 
-	/** The password. */
-	private String password;
-	
-	/**
-	 * Gets the uname.
-	 *
-	 * @return the uname
-	 */
-	public String getUname() {
-		return uname;
-	}
+    /** The uname. */
+    private String uname;
 
-	/**
-	 * Sets the uname.
-	 *
-	 * @param uname the new uname
-	 */
-	public void setUname(String uname) {
-		this.uname = uname;
-	}
+    /** The password. */
+    private String password;
 
-	/**
-	 * Gets the password.
-	 *
-	 * @return the password
-	 */
-	public String getPassword() {
-		return password;
-	}
+    /**
+     * Gets the uname.
+     * 
+     * @return the uname
+     */
+    String getUname() {
+        return uname;
+    }
 
-	/**
-	 * Sets the password.
-	 *
-	 * @param password the new password
-	 */
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    /**
+     * Sets the uname.
+     * 
+     * @param uname
+     *            the new uname
+     */
+    void setUname(String uname) {
+        this.uname = uname;
+    }
 
-	/**
-	 * Start.
-	 *
-	 * @throws InitializationException the initialization exception
-	 */
-	abstract void start() throws InitializationException;
-	
-	/**
-	 * Shutdown.
-	 */
-	abstract void shutdown();
-	
-	/**
-	 * Gets the driver.
-	 *
-	 * @return the driver
-	 */
-	abstract String getDriver();
-	
-	/**
-	 * Gets the network protocol.
-	 *
-	 * @return the network protocol
-	 */
-	abstract String getNetworkProtocol();
-	
+    /**
+     * Gets the password.
+     * 
+     * @return the password
+     */
+    String getPassword() {
+        return password;
+    }
+
+    /**
+     * Sets the password.
+     * 
+     * @param password
+     *            the new password
+     */
+    void setPassword(String password) {
+        this.password = password;
+    }
+
+    /**
+     * Start.
+     * 
+     * @throws InitializationException
+     *             the initialization exception
+     */
+    abstract void start() throws InitializationException;
+
+    /**
+     * Shutdown.
+     */
+    abstract void shutdown();
+
+    /**
+     * Gets the driver.
+     * 
+     * @return the driver
+     */
+    abstract String getDriver();
+
+    /**
+     * Gets the network protocol.
+     * 
+     * @return the network protocol
+     */
+    abstract String getNetworkProtocol();
+
 }

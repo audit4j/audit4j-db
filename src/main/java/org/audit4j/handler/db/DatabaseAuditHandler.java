@@ -61,9 +61,11 @@ public class DatabaseAuditHandler extends Handler {
     /** The Constant JNDI_CONNECTION. */
     private static final String JNDI_CONNECTION = "jndi";
 
-    EmbededDBServer server;
+    /** The server. */
+    private EmbededDBServer server;
 
-    ConnectionFactory factory;
+    /** The factory. */
+    private ConnectionFactory factory;
 
     /**
      * Initialize database handler.
@@ -93,12 +95,12 @@ public class DatabaseAuditHandler extends Handler {
         factory.setUrl(getDb_url());
         factory.setUser(getDb_user());
         factory.setPassword(getDb_password());
-        factory.setJndiDataSource(getDb_jndi_datasource());
 
         if (getDb_connection_type() != null && getDb_connection_type().equals(POOLED_CONNECTION)) {
             factory.setConnectionType(ConnectionType.POOLED);
         } else if (getDb_connection_type() != null && getDb_connection_type().equals(JNDI_CONNECTION)) {
             factory.setConnectionType(ConnectionType.JNDI);
+            factory.setJndiDataSource(getDb_jndi_datasource());
         } else {
             factory.setConnectionType(ConnectionType.SINGLE);
         }

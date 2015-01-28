@@ -22,10 +22,10 @@ public class DBHandlerEmbededInitIntTest {
 
     @Test
     public void testInitWithAuth() {
-        DatabaseAuditHandler handler = new DatabaseAuditHandler();
-        handler.setDb_user("Audit4j");
-        handler.setDb_password("@uD!T4j");
-        handler.init();
-        handler.stop();
+        // DatabaseAuditHandler handler = new DatabaseAuditHandler();
+        // handler.setDb_user("Audit4j");
+        // handler.setDb_password("@uD!T4j");
+        // handler.init();
+        // handler.stop();
     }
 }
