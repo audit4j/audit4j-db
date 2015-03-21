@@ -1,7 +1,6 @@
 /*
- * Copyright 2014 Janith Bandara, This source is a part of Audit4j - 
- * An open-source audit platform for Enterprise java platform.
- * http://mechanizedspace.com/audit4j
+ * Copyright (c) 2014-2015 Janith Bandara, This source is a part of
+ * Audit4j - An open source auditing framework.
  * http://audit4j.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,7 +53,7 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
     public boolean writeEvent(AuditEvent event) throws HandlerException {
         String uuid;
         String timestamp;
-        StringBuffer elements = new StringBuffer();
+        StringBuilder elements = new StringBuilder();
 
         if (event.getUuid() == null) {
             uuid = String.valueOf(UUID.randomUUID().getMostSignificantBits());
@@ -129,12 +128,10 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
     }
 
     public static AuditLogDao getInstance() {
-        if (!initialized) {
-            synchronized (AuditLogDaoImpl.class) {
-                if (!initialized) {
-                    auditDao = new AuditLogDaoImpl();
-                    initialized = true;
-                }
+        synchronized (AuditLogDaoImpl.class) {
+            if (!initialized) {
+                auditDao = new AuditLogDaoImpl();
+                initialized = true;
             }
         }
         return auditDao;

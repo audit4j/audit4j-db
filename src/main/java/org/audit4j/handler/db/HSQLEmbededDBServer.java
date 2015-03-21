@@ -1,6 +1,6 @@
 /*
- * Copyright 2014 Janith Bandara, This source is a part of Audit4j - 
- * An open-source audit platform for Enterprise java platform.
+ * Copyright (c) 2014-2015 Janith Bandara, This source is a part of
+ * Audit4j - An open source auditing framework.
  * http://audit4j.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,8 +37,8 @@ final class HSQLEmbededDBServer extends EmbededDBServer {
 
     /** The hsql server. */
     private Server hsqlServer = null;
-    
-    private HSQLEmbededDBServer(){
+
+    private HSQLEmbededDBServer() {
         // Singalton private constructor.
     }
 
@@ -78,9 +78,10 @@ final class HSQLEmbededDBServer extends EmbededDBServer {
      * @return single instance of HSQLEmbededDBServer
      */
     static EmbededDBServer getInstance() {
-        if (instance == null) {
-            instance = new HSQLEmbededDBServer();
-            return instance;
+        synchronized (EmbededDBServer.class) {
+            if (instance == null) {
+                instance = new HSQLEmbededDBServer();
+            }
         }
         return instance;
     }

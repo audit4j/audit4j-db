@@ -1,6 +1,6 @@
 /*
- * Copyright 2014 Janith Bandara, This source is a part of Audit4j - 
- * An open-source audit platform for Enterprise java platform.
+ * Copyright (c) 2014-2015 Janith Bandara, This source is a part of
+ * Audit4j - An open source auditing framework.
  * http://audit4j.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,8 +28,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.audit4j.core.Log;
 import org.audit4j.core.exception.InitializationException;
+import org.audit4j.core.util.Log;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
@@ -199,7 +199,7 @@ final class ConnectionFactory {
         }
         datasource = null;
     }
-    
+
     /**
      * Sets the driver.
      * 
@@ -266,8 +266,10 @@ final class ConnectionFactory {
      * @return single instance of ConnectionFactory
      */
     static ConnectionFactory getInstance() {
-        if (instance == null) {
-            instance = new ConnectionFactory();
+        synchronized (ConnectionFactory.class) {
+            if (instance == null) {
+                instance = new ConnectionFactory();
+            }
         }
         return instance;
     }

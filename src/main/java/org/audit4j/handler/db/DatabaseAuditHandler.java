@@ -1,6 +1,6 @@
 /*
- * Copyright 2014 Janith Bandara, This source is a part of Audit4j - 
- * An open-source audit platform for Enterprise java platform.
+ * Copyright (c) 2014-2015 Janith Bandara, This source is a part of
+ * Audit4j - An open source auditing framework.
  * http://audit4j.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,6 +66,8 @@ public class DatabaseAuditHandler extends Handler {
 
     /** The factory. */
     private ConnectionFactory factory;
+    
+    private AuditLogDao logDao;
 
     /**
      * Initialize database handler.
@@ -80,10 +82,10 @@ public class DatabaseAuditHandler extends Handler {
             db_driver = server.getDriver();
             db_url = server.getNetworkProtocol() + "://localhost/audit4j";
             if (db_user == null) {
-                db_user = "audit4jdbuser";
+                db_user = Utils.EMBEDED_DB_USER;
             }
             if (db_password == null) {
-                db_password = "audit4jdbpassword";
+                db_password = Utils.EMBEDED_DB_PASSWORD;
             }
             server.setUname(db_user);
             server.setPassword(db_password);
@@ -107,9 +109,9 @@ public class DatabaseAuditHandler extends Handler {
 
         factory.init();
 
-        AuditLogDao dao = AuditLogDaoImpl.getInstance();
+        logDao = AuditLogDaoImpl.getInstance();
         try {
-            dao.createAuditTableIFNotExist();
+            logDao.createAuditTableIFNotExist();
         } catch (SQLException e) {
             throw new InitializationException("Could not create the audit table structure.", e);
         }
@@ -122,9 +124,8 @@ public class DatabaseAuditHandler extends Handler {
      */
     @Override
     public void handle() throws HandlerException {
-        AuditLogDao dao = AuditLogDaoImpl.getInstance();
         try {
-            dao.writeEvent(getAuditEvent());
+            logDao.writeEvent(getAuditEvent());
         } catch (SQLException e) {
             throw new HandlerException("SQL exception occured while writing the event", DatabaseAuditHandler.class, e);
         }
