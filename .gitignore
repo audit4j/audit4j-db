@@ -1,0 +1,20 @@
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+.idea/
+*.iml
+*.audit
+*.yml
+*.log
+*.lck
+*.properties
+*.script
+.settings
+.classpath
+.project
+	
+audit4jdb.tmp
+target

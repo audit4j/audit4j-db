@@ -32,12 +32,12 @@ public class AuditLogDaoImplTest {
     @Test
     public void testcreateAuditTableIFNotExist() {
         AuditLogDao logDao = AuditLogDaoImpl.getInstance();
-        try {
+      /*  try {
             logDao.createAuditTableIFNotExist();
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
+        }*/
     }
 
     @Test

@@ -156,7 +156,7 @@ final class ConnectionFactory {
      * 
      * @return true, if successful
      */
-    boolean init() {
+    void init() {
         if (connectionType.equals(ConnectionType.POOLED)) {
             try {
                 cpds = new ComboPooledDataSource();
@@ -165,7 +165,6 @@ final class ConnectionFactory {
                 cpds.setJdbcUrl(url);
                 cpds.setUser(this.user);
                 cpds.setPassword(this.password);
-
             } catch (PropertyVetoException e) {
                 throw new InitializationException("Couldn't initialize c3p0 object pool", e);
             }

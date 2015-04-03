@@ -66,8 +66,12 @@ public class DatabaseAuditHandler extends Handler {
 
     /** The factory. */
     private ConnectionFactory factory;
-    
+
+    /** The log dao. */
     private AuditLogDao logDao;
+
+    /** The separate. */
+    private boolean separate = false;
 
     /**
      * Initialize database handler.
@@ -110,24 +114,35 @@ public class DatabaseAuditHandler extends Handler {
         factory.init();
 
         logDao = AuditLogDaoImpl.getInstance();
-        try {
-            logDao.createAuditTableIFNotExist();
-        } catch (SQLException e) {
-            throw new InitializationException("Could not create the audit table structure.", e);
-        }
+        logDao.createAuditTableIFNotExist("audit");
+
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Handle event.
      * 
-     * @see com.bi3.commons.audit.handler.Handler#handle()
+     * {@inheritDoc}
+     * 
+     * @see org.audit4j.core.handler.Handler#handle()
+     * 
      */
     @Override
     public void handle() throws HandlerException {
-        try {
-            logDao.writeEvent(getAuditEvent());
-        } catch (SQLException e) {
-            throw new HandlerException("SQL exception occured while writing the event", DatabaseAuditHandler.class, e);
+        String tag = getAuditEvent().getTag();
+        if (separate && tag != null) {
+            try {
+                logDao.saveEventWithNewTable(getAuditEvent(), tag + "_audit");
+            } catch (SQLException e) {
+                throw new HandlerException("SQL exception occured while writing the event", DatabaseAuditHandler.class,
+                        e);
+            }
+        } else {
+            try {
+                logDao.writeEvent(getAuditEvent());
+            } catch (SQLException e) {
+                throw new HandlerException("SQL exception occured while writing the event", DatabaseAuditHandler.class,
+                        e);
+            }
         }
     }
 
@@ -273,4 +288,12 @@ public class DatabaseAuditHandler extends Handler {
         this.db_jndi_datasource = db_jndi_datasource;
     }
 
+    /**
+     * Sets the separate.
+     *
+     * @param separate the new separate
+     */
+    public void setSeparate(boolean separate) {
+        this.separate = separate;
+    }
 }

@@ -103,8 +103,8 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
     }
 
     @Override
-    public boolean createAuditTableIFNotExist() {
-        StringBuffer query = new StringBuffer("create table if not exists audit (");
+    public boolean createAuditTableIFNotExist(String tableName) {
+        StringBuffer query = new StringBuffer("create table if not exists "+ tableName +" (");
         query.append("uuid varchar(200) NOT NULL,");
         query.append("timestamp varchar(100) NOT NULL,");
         query.append("actor varchar(200) NOT NULL,");
@@ -135,5 +135,12 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
             }
         }
         return auditDao;
+    }
+
+    @Override
+    public boolean saveEventWithNewTable(AuditEvent event, String tableName) throws HandlerException {
+        createAuditTableIFNotExist(tableName);
+        writeEvent(event);
+        return true;
     }
 }

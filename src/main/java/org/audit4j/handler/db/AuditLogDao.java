@@ -25,26 +25,40 @@ import org.audit4j.core.exception.HandlerException;
 
 /**
  * The Interface AuditLogDao.
- *
+ * 
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
 interface AuditLogDao {
 
-	/**
-	 * Write event.
-	 *
-	 * @param event the event
-	 * @return true, if successful
-	 * @throws SQLException the sQL exception
-	 * @throws HandlerException 
-	 */
-	boolean writeEvent(AuditEvent event) throws SQLException, HandlerException;
-	
-	/**
-	 * Creates the audit table if not exist.
-	 *
-	 * @return true, if successful
-	 * @throws SQLException the sQL exception
-	 */
-	boolean createAuditTableIFNotExist() throws SQLException;
+    /**
+     * Write event.
+     *
+     * @param event the event
+     * @return true, if successful
+     * @throws SQLException the sQL exception
+     * @throws HandlerException the handler exception
+     */
+    boolean writeEvent(final AuditEvent event) throws SQLException, HandlerException;
+
+    /**
+     * Write event with new table.
+     *
+     * @param event the event
+     * @param tableName the table name
+     * @return true, if successful
+     * @throws SQLException the sQL exception
+     * @throws HandlerException the handler exception
+     */
+    boolean saveEventWithNewTable(final AuditEvent event, final String tableName) throws SQLException, HandlerException;
+
+    /**
+     * Creates the audit table if not exist.
+     * 
+     * @return true, if successful
+     * @throws SQLException
+     *             the sQL exception
+     */
+   // boolean createAuditTableIFNotExist() throws SQLException;
+
+    boolean createAuditTableIFNotExist(String tableName);
 }
