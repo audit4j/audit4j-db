@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.audit4j.core.exception.InitializationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,40 +54,6 @@ public class ConnectionFactoryTest {
         
     }
     
-    @Test
-    public void testGetPooledConnection() {
-        ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
-        connectionFactory.setDriver("org.hsqldb.jdbcDriver");
-        connectionFactory.setUrl("jdbc:hsqldb:hsql://localhost/audit4j");
-        connectionFactory.setUser("audit4jdbuser");
-        connectionFactory.setPassword("audit4jdbpassword");
-        connectionFactory.setConnectionType(ConnectionType.POOLED);
-        connectionFactory.init();
-        Connection conn = connectionFactory.getPooledConnection();
-        assertNotNull(conn);
-        try {
-            conn.close();
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        connectionFactory.stop();
-    }
-    
-    @Test(expected = InitializationException.class)
-    public void testGetSingleConnectionCkhPooledAndJndi() {
-        ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
-        connectionFactory.setDriver("org.hsqldb.jdbcDriver");
-        connectionFactory.setUrl("jdbc:hsqldb:hsql://localhost/audit4j");
-        connectionFactory.setUser("audit4jdbuser");
-        connectionFactory.setPassword("audit4jdbpassword");
-        connectionFactory.setConnectionType(ConnectionType.SINGLE);
-        connectionFactory.init();
-        Connection conn = connectionFactory.getPooledConnection();
-        assertNotNull(conn);
-        connectionFactory.stop();
-    }
-
     @After
     public void after() {
         server.shutdown();

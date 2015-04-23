@@ -76,8 +76,8 @@ final class ConnectionFactory {
     /** The cpds. */
     private static ComboPooledDataSource cpds;
 
-    /** The datasource. */
-    private static DataSource datasource;
+    /** The data source. */
+    private DataSource dataSource;
 
     /**
      * Gets the connection.
@@ -85,10 +85,8 @@ final class ConnectionFactory {
      * @return the connection
      */
     Connection getConnection() {
-        if (connectionType.equals(ConnectionType.POOLED)) {
-            return getPooledConnection();
-        } else if (connectionType.equals(ConnectionType.JNDI)) {
-            return getJNDIConnection();
+        if (dataSource != null) {
+            return getDataSourceConnection();
         } else {
             return getSingleConnection();
         }
@@ -113,38 +111,15 @@ final class ConnectionFactory {
     }
 
     /**
-     * Gets the pooled connection.
+     * Gets the data source connection.
      * 
-     * @return the pooled connection
+     * @return the data source connection
+     * @since 2.4.0
      */
-    Connection getPooledConnection() {
-        if (cpds == null) {
-            throw new InitializationException("Could not obtain the db connection: Connection pool is null.");
-        }
-        try {
-            return cpds.getConnection();
-        } catch (SQLException e) {
-            throw new InitializationException("Could not obtain the db connection", e);
-        }
-
-    }
-
-    /**
-     * Gets the jNDI connection.
-     * 
-     * @return the jNDI connection
-     * 
-     * @since 1.0.5
-     */
-    Connection getJNDIConnection() {
+    Connection getDataSourceConnection() {
         Connection connection = null;
         try {
-            if (datasource != null) {
-                connection = datasource.getConnection();
-            } else {
-                Log.error("Failed to lookup datasource.");
-                throw new InitializationException("Could not obtain the db connection: Failed to lookup datasource.");
-            }
+            connection = dataSource.getConnection();
         } catch (SQLException ex) {
             throw new InitializationException("Could not obtain the db connection: Cannot get connection", ex);
         }
@@ -153,39 +128,40 @@ final class ConnectionFactory {
 
     /**
      * Inits the.
-     * 
-     * @return true, if successful
      */
     void init() {
-        if (connectionType.equals(ConnectionType.POOLED)) {
-            try {
-                cpds = new ComboPooledDataSource();
-                cpds.setDriverClass(this.driver);
+        if (dataSource == null) {
+            if (connectionType.equals(ConnectionType.POOLED)) {
 
-                cpds.setJdbcUrl(url);
-                cpds.setUser(this.user);
-                cpds.setPassword(this.password);
-            } catch (PropertyVetoException e) {
-                throw new InitializationException("Couldn't initialize c3p0 object pool", e);
-            }
-        } else if (connectionType.equals(ConnectionType.JNDI)) {
-            if (null == jndiDataSource) {
-                throw new InitializationException("Could not obtain the db connection: jndi data source is null");
-            }
-            String DATASOURCE_CONTEXT = jndiDataSource;
-            try {
-                Context initialContext = new InitialContext();
-                datasource = (DataSource) initialContext.lookup(DATASOURCE_CONTEXT);
-                if (datasource == null) {
-                    Log.error("Failed to lookup datasource.");
-                    throw new InitializationException(
-                            "Could not obtain the db connection: Failed to lookup datasource: " + jndiDataSource);
+                try {
+                    cpds = new ComboPooledDataSource();
+                    cpds.setDriverClass(this.driver);
+
+                    cpds.setJdbcUrl(url);
+                    cpds.setUser(this.user);
+                    cpds.setPassword(this.password);
+                    dataSource = cpds;
+                } catch (PropertyVetoException e) {
+                    throw new InitializationException("Couldn't initialize c3p0 object pool", e);
                 }
-            } catch (NamingException ex) {
-                throw new InitializationException("Could not obtain the db connection: jndi lookup failed", ex);
+            } else if (connectionType.equals(ConnectionType.JNDI)) {
+                if (null == jndiDataSource) {
+                    throw new InitializationException("Could not obtain the db connection: jndi data source is null");
+                }
+                String DATASOURCE_CONTEXT = jndiDataSource;
+                try {
+                    Context initialContext = new InitialContext();
+                    dataSource = (DataSource) initialContext.lookup(DATASOURCE_CONTEXT);
+                    if (dataSource == null) {
+                        Log.error("Failed to lookup datasource.");
+                        throw new InitializationException(
+                                "Could not obtain the db connection: Failed to lookup datasource: " + jndiDataSource);
+                    }
+                } catch (NamingException ex) {
+                    throw new InitializationException("Could not obtain the db connection: jndi lookup failed", ex);
+                }
             }
         }
-        return Boolean.TRUE;
     }
 
     /**
@@ -196,7 +172,6 @@ final class ConnectionFactory {
             cpds.close();
             cpds = null;
         }
-        datasource = null;
     }
 
     /**
@@ -257,6 +232,16 @@ final class ConnectionFactory {
      */
     public void setConnectionType(ConnectionType connectionType) {
         this.connectionType = connectionType;
+    }
+
+    /**
+     * Sets the data source.
+     * 
+     * @param dataSource
+     *            the new data source
+     */
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     /**

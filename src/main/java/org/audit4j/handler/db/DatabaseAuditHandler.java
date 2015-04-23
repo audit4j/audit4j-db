@@ -20,6 +20,8 @@ package org.audit4j.handler.db;
 
 import java.sql.SQLException;
 
+import javax.sql.DataSource;
+
 import org.audit4j.core.exception.HandlerException;
 import org.audit4j.core.exception.InitializationException;
 import org.audit4j.core.handler.Handler;
@@ -73,6 +75,15 @@ public class DatabaseAuditHandler extends Handler {
     /** The separate. */
     private boolean separate = false;
 
+    /** The data source. */
+    private DataSource dataSource;
+
+    /** The table_prefix. */
+    private String table_prefix = "";
+
+    /** The table_suffix. */
+    private String table_suffix = "audit";
+
     /**
      * Initialize database handler.
      * 
@@ -97,6 +108,7 @@ public class DatabaseAuditHandler extends Handler {
         }
 
         factory = ConnectionFactory.getInstance();
+        factory.setDataSource(dataSource);
         factory.setDriver(getDb_driver());
         factory.setUrl(getDb_url());
         factory.setUser(getDb_user());
@@ -131,7 +143,7 @@ public class DatabaseAuditHandler extends Handler {
         String tag = getAuditEvent().getTag();
         if (separate && tag != null) {
             try {
-                logDao.saveEventWithNewTable(getAuditEvent(), tag + "_audit");
+                logDao.saveEventWithNewTable(getAuditEvent(), table_prefix + "_" + tag + "_" + table_suffix);
             } catch (SQLException e) {
                 throw new HandlerException("SQL exception occured while writing the event", DatabaseAuditHandler.class,
                         e);
@@ -290,10 +302,41 @@ public class DatabaseAuditHandler extends Handler {
 
     /**
      * Sets the separate.
-     *
-     * @param separate the new separate
+     * 
+     * @param separate
+     *            the new separate
      */
     public void setSeparate(boolean separate) {
         this.separate = separate;
+    }
+
+    /**
+     * Sets the data source.
+     * 
+     * @param dataSource
+     *            the new data source
+     */
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+    
+    /**
+     * Sets the table_prefix.
+     * 
+     * @param table_prefix
+     *            the new table_prefix
+     */
+    public void setTable_prefix(String table_prefix) {
+        this.table_prefix = table_prefix;
+    }
+    
+    /**
+     * Sets the table_suffix.
+     * 
+     * @param table_suffix
+     *            the new table_suffix
+     */
+    public void setTable_suffix(String table_suffix) {
+        this.table_suffix = table_suffix;
     }
 }

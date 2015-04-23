@@ -1,44 +1,33 @@
+/*C15*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C16*/SET SCHEMA PUBLIC
+INSERT INTO AUDIT VALUES('3112563721604713290','Wed Apr 22 23:51:42 IST 2015','Dummy Actor','Origin1','myMethod','myParam1Name java.lang.String:param1, myParam2Name java.lang.Integer:2, ')
+COMMIT
+/*C17*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C16*/DISCONNECT
+/*C18*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C19*/SET SCHEMA PUBLIC
+create table if not exists audit (uuid varchar(200) NOT NULL,timestamp varchar(100) NOT NULL,actor varchar(200) NOT NULL,origin varchar(200),action varchar(200) NOT NULL,elements varchar(20000))
 /*C20*/SET SCHEMA PUBLIC
 DISCONNECT
 /*C21*/SET SCHEMA PUBLIC
-create table if not exists audit (uuid varchar(200) NOT NULL,timestamp varchar(100) NOT NULL,actor varchar(200) NOT NULL,origin varchar(200),action varchar(200) NOT NULL,elements varchar(20000))
+INSERT INTO AUDIT VALUES('937661479402490735','Wed Apr 22 23:51:43 IST 2015','Dummy Actor','Origin1','myMethod','myParam1Name java.lang.String:param1, myParam2Name java.lang.Integer:2, ')
+COMMIT
+/*C19*/DISCONNECT
 /*C22*/SET SCHEMA PUBLIC
 DISCONNECT
 /*C21*/DISCONNECT
 /*C23*/SET SCHEMA PUBLIC
-INSERT INTO AUDIT VALUES('6702640621139543567','Sat Mar 21 17:09:00 IST 2015','Dummy Actor','Origin1','myMethod','myParam1Name java.lang.String:param1, myParam2Name java.lang.Integer:2, ')
-COMMIT
+create table if not exists audit (uuid varchar(200) NOT NULL,timestamp varchar(100) NOT NULL,actor varchar(200) NOT NULL,origin varchar(200),action varchar(200) NOT NULL,elements varchar(20000))
 /*C24*/SET SCHEMA PUBLIC
 DISCONNECT
 /*C23*/DISCONNECT
+/*C27*/SET SCHEMA PUBLIC
+create table if not exists audit (uuid varchar(200) NOT NULL,timestamp varchar(100) NOT NULL,actor varchar(200) NOT NULL,origin varchar(200),action varchar(200) NOT NULL,elements varchar(20000))
 /*C25*/SET SCHEMA PUBLIC
 DISCONNECT
 /*C26*/SET SCHEMA PUBLIC
 DISCONNECT
-/*C28*/SET SCHEMA PUBLIC
-DISCONNECT
-/*C27*/SET SCHEMA PUBLIC
-DISCONNECT
-/*C29*/SET SCHEMA PUBLIC
-create table if not exists audit (uuid varchar(200) NOT NULL,timestamp varchar(100) NOT NULL,actor varchar(200) NOT NULL,origin varchar(200),action varchar(200) NOT NULL,elements varchar(20000))
-/*C30*/SET SCHEMA PUBLIC
-DISCONNECT
-/*C31*/SET SCHEMA PUBLIC
-INSERT INTO AUDIT VALUES('-1278292457512615834','Sat Mar 21 17:09:04 IST 2015','Dummy Actor','Origin1','myMethod','myParam1Name java.lang.String:param1, myParam2Name java.lang.Integer:2, ')
-COMMIT
-/*C32*/SET SCHEMA PUBLIC
-DISCONNECT
-/*C29*/DISCONNECT
-/*C31*/DISCONNECT
-/*C33*/SET SCHEMA PUBLIC
-create table if not exists audit (uuid varchar(200) NOT NULL,timestamp varchar(100) NOT NULL,actor varchar(200) NOT NULL,origin varchar(200),action varchar(200) NOT NULL,elements varchar(20000))
-/*C34*/SET SCHEMA PUBLIC
-DISCONNECT
-/*C33*/DISCONNECT
-/*C36*/SET SCHEMA PUBLIC
-create table if not exists audit (uuid varchar(200) NOT NULL,timestamp varchar(100) NOT NULL,actor varchar(200) NOT NULL,origin varchar(200),action varchar(200) NOT NULL,elements varchar(20000))
-/*C37*/SET SCHEMA PUBLIC
-DISCONNECT
-/*C35*/SET SCHEMA PUBLIC
-DISCONNECT
-/*C36*/DISCONNECT
+/*C27*/DISCONNECT
