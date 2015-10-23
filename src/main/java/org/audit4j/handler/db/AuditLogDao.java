@@ -55,10 +55,11 @@ interface AuditLogDao {
      * Creates the audit table if not exist.
      * 
      * @return true, if successful
+     * @throws HandlerException 
      * @throws SQLException
      *             the sQL exception
      */
    // boolean createAuditTableIFNotExist() throws SQLException;
 
-    boolean createAuditTableIFNotExist(String tableName);
+    boolean createAuditTableIFNotExist(String tableName) throws HandlerException;
 }

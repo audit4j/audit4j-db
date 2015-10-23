@@ -18,6 +18,7 @@
 
 package org.audit4j.handler.db;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
@@ -26,7 +27,6 @@ import java.util.UUID;
 import org.audit4j.core.dto.AuditEvent;
 import org.audit4j.core.dto.Field;
 import org.audit4j.core.exception.HandlerException;
-import org.audit4j.core.exception.InitializationException;
 
 /**
  * The Class HSQLAuditLogDao.
@@ -35,10 +35,15 @@ import org.audit4j.core.exception.InitializationException;
  */
 final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
 
+    /** The initialized. */
     public static boolean initialized = false;
 
+    /** The audit dao. */
     public static AuditLogDao auditDao;
 
+    /**
+     * Instantiates a new audit log dao impl.
+     */
     private AuditLogDaoImpl() {
     }
 
@@ -48,6 +53,12 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
      * @see
      * org.audit4j.core.handler.db.AuditLogDao#createEvent(org.audit4j.core.
      * dto.AuditEvent)
+     */
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.audit4j.handler.db.AuditLogDao#writeEvent(org.audit4j.core.dto.AuditEvent)
+     *
      */
     @Override
     public boolean writeEvent(AuditEvent event) throws HandlerException {
@@ -74,9 +85,11 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         query.append("insert into audit(uuid, timestamp, actor, origin, action, elements) ").append(
                 "values (?, ?, ?, ?, ?, ?)");
 
+        Connection conn = getConnection();
         PreparedStatement statement = null;
         try {
-            statement = getConnection().prepareStatement(query.toString());
+
+            statement = conn.prepareStatement(query.toString());
             statement.setString(1, uuid);
             statement.setString(2, timestamp);
             statement.setString(3, event.getActor());
@@ -88,12 +101,14 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
             throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
         } finally {
             try {
-                super.getConnection().close();
+                statement.close();
+                statement = null;
             } catch (SQLException e) {
                 throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
             } finally {
                 try {
-                    statement.close();
+                    conn.close();
+                    conn = null;
                 } catch (SQLException e) {
                     throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
                 }
@@ -102,9 +117,15 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.audit4j.handler.db.AuditLogDao#createAuditTableIFNotExist(java.lang.String)
+     *
+     */
     @Override
-    public boolean createAuditTableIFNotExist(String tableName) {
-        StringBuffer query = new StringBuffer("create table if not exists "+ tableName +" (");
+    public boolean createAuditTableIFNotExist(String tableName) throws HandlerException {
+        StringBuffer query = new StringBuffer("create table if not exists " + tableName + " (");
         query.append("uuid varchar(200) NOT NULL,");
         query.append("timestamp varchar(100) NOT NULL,");
         query.append("actor varchar(200) NOT NULL,");
@@ -113,20 +134,49 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         query.append("elements varchar(20000)");
         query.append(");");
 
+        Connection conn = getConnection();
+        PreparedStatement statement = null;
         try {
-            getConnection().prepareStatement(query.toString()).execute();
+            statement = conn.prepareStatement(query.toString());
+            statement.execute();
         } catch (SQLException e) {
-            throw new InitializationException("SQL Exception: ", e);
+            throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
         } finally {
             try {
-                super.getConnection().close();
+                statement.close();
+                statement = null;
             } catch (SQLException e) {
-                throw new InitializationException("SQL Exception: ", e);
+                throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
+            } finally {
+                try {
+                    conn.close();
+                    conn = null;
+                } catch (SQLException e) {
+                    throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
+                }
             }
         }
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.audit4j.handler.db.AuditLogDao#saveEventWithNewTable(org.audit4j.core.dto.AuditEvent, java.lang.String)
+     *
+     */
+    @Override
+    public boolean saveEventWithNewTable(AuditEvent event, String tableName) throws HandlerException {
+        createAuditTableIFNotExist(tableName);
+        writeEvent(event);
+        return true;
+    }
+
+    /**
+     * Gets the single instance of AuditLogDaoImpl.
+     *
+     * @return single instance of AuditLogDaoImpl
+     */
     public static AuditLogDao getInstance() {
         synchronized (AuditLogDaoImpl.class) {
             if (!initialized) {
@@ -135,12 +185,5 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
             }
         }
         return auditDao;
-    }
-
-    @Override
-    public boolean saveEventWithNewTable(AuditEvent event, String tableName) throws HandlerException {
-        createAuditTableIFNotExist(tableName);
-        writeEvent(event);
-        return true;
     }
 }

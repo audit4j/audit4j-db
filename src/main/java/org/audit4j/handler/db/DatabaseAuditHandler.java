@@ -18,6 +18,7 @@
 
 package org.audit4j.handler.db;
 
+import java.io.Serializable;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
@@ -31,7 +32,7 @@ import org.audit4j.core.handler.Handler;
  * 
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
-public class DatabaseAuditHandler extends Handler {
+public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /** The Constant serialVersionUID. */
     private static final long serialVersionUID = -4994028889410866952L;
@@ -70,7 +71,7 @@ public class DatabaseAuditHandler extends Handler {
     private ConnectionFactory factory;
 
     /** The log dao. */
-    private AuditLogDao logDao;
+    private final AuditLogDao logDao;
 
     /** The separate. */
     private boolean separate = false;
@@ -83,6 +84,10 @@ public class DatabaseAuditHandler extends Handler {
 
     /** The table_suffix. */
     private String table_suffix = "audit";
+
+    public DatabaseAuditHandler() {
+        logDao = AuditLogDaoImpl.getInstance();
+    }
 
     /**
      * Initialize database handler.
@@ -125,8 +130,11 @@ public class DatabaseAuditHandler extends Handler {
 
         factory.init();
 
-        logDao = AuditLogDaoImpl.getInstance();
-        logDao.createAuditTableIFNotExist("audit");
+        try {
+            logDao.createAuditTableIFNotExist("audit");
+        } catch (HandlerException e) {
+            throw new InitializationException("Unable to create tables", e);
+        }
 
     }
 
@@ -319,7 +327,7 @@ public class DatabaseAuditHandler extends Handler {
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
-    
+
     /**
      * Sets the table_prefix.
      * 
@@ -329,7 +337,7 @@ public class DatabaseAuditHandler extends Handler {
     public void setTable_prefix(String table_prefix) {
         this.table_prefix = table_prefix;
     }
-    
+
     /**
      * Sets the table_suffix.
      * 

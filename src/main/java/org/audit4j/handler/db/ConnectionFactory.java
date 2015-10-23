@@ -18,7 +18,6 @@
 
 package org.audit4j.handler.db;
 
-import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -31,7 +30,7 @@ import javax.sql.DataSource;
 import org.audit4j.core.exception.InitializationException;
 import org.audit4j.core.util.Log;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * A factory for creating Connection objects.
@@ -49,6 +48,8 @@ final class ConnectionFactory {
     /** The db_driver. */
     private String driver = "org.hsqldb.jdbcDriver";
 
+    private final String dataSourceClass = "org.hsqldb.jdbc.JDBCDataSource";
+
     /** The db_url. */
     private String url = "jdbc:hsqldb:hsql://localhost/audit4j";
 
@@ -64,6 +65,8 @@ final class ConnectionFactory {
     /** The connection type. */
     private ConnectionType connectionType;
 
+    private HikariDataSource ds;
+
     /**
      * Instantiates a new connection factory.
      */
@@ -72,9 +75,6 @@ final class ConnectionFactory {
 
     /** The instance. */
     private static ConnectionFactory instance;
-
-    /** The cpds. */
-    private static ComboPooledDataSource cpds;
 
     /** The data source. */
     private DataSource dataSource;
@@ -119,7 +119,7 @@ final class ConnectionFactory {
     Connection getDataSourceConnection() {
         Connection connection = null;
         try {
-            connection = dataSource.getConnection();
+            connection = ds.getConnection();
         } catch (SQLException ex) {
             throw new InitializationException("Could not obtain the db connection: Cannot get connection", ex);
         }
@@ -132,18 +132,20 @@ final class ConnectionFactory {
     void init() {
         if (dataSource == null) {
             if (connectionType.equals(ConnectionType.POOLED)) {
+                ds = new HikariDataSource();
 
-                try {
-                    cpds = new ComboPooledDataSource();
-                    cpds.setDriverClass(this.driver);
+                ds.setMaximumPoolSize(100);
+                ds.setDataSourceClassName(dataSourceClass);
+                ds.addDataSourceProperty("url", url);
+                ds.addDataSourceProperty("user", user);
+                ds.addDataSourceProperty("password", password);
+                ds.addDataSourceProperty("maximumPoolSize", 10);
 
-                    cpds.setJdbcUrl(url);
-                    cpds.setUser(this.user);
-                    cpds.setPassword(this.password);
-                    dataSource = cpds;
-                } catch (PropertyVetoException e) {
-                    throw new InitializationException("Couldn't initialize c3p0 object pool", e);
-                }
+                // ds.addDataSourceProperty("maxLifetime", 3000);
+                // ds.addDataSourceProperty("prepStmtCacheSqlLimit", 2048);
+                // ds.addDataSourceProperty("useServerPrepStmts", true);
+                // dataSource = ds;
+
             } else if (connectionType.equals(ConnectionType.JNDI)) {
                 if (null == jndiDataSource) {
                     throw new InitializationException("Could not obtain the db connection: jndi data source is null");
@@ -168,9 +170,8 @@ final class ConnectionFactory {
      * Stop.
      */
     void stop() {
-        if (cpds != null) {
-            cpds.close();
-            cpds = null;
+        if (ds != null) {
+            ds.close();
         }
     }
 

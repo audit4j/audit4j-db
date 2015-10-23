@@ -31,6 +31,7 @@ final class HSQLEmbededDBServer extends EmbededDBServer {
     /** The Constant driver. */
     private static final String driver = "org.hsqldb.jdbcDriver";
 
+    /** The Constant networkProtol. */
     private static final String networkProtol = "jdbc:hsqldb:hsql";
     /** The instance. */
     public static HSQLEmbededDBServer instance;
@@ -38,6 +39,9 @@ final class HSQLEmbededDBServer extends EmbededDBServer {
     /** The hsql server. */
     private Server hsqlServer = null;
 
+    /**
+     * Instantiates a new hSQL embeded db server.
+     */
     private HSQLEmbededDBServer() {
         // Singalton private constructor.
     }
@@ -46,6 +50,12 @@ final class HSQLEmbededDBServer extends EmbededDBServer {
      * (non-Javadoc)
      * 
      * @see org.audit4j.core.handler.db.EmbededDBServer#start()
+     */
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.audit4j.handler.db.EmbededDBServer#start()
+     *
      */
     @Override
     void start() throws InitializationException {
@@ -64,6 +74,12 @@ final class HSQLEmbededDBServer extends EmbededDBServer {
      * (non-Javadoc)
      * 
      * @see org.audit4j.core.handler.db.EmbededDBServer#shutdown()
+     */
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.audit4j.handler.db.EmbededDBServer#shutdown()
+     *
      */
     @Override
     void shutdown() {
@@ -91,11 +107,23 @@ final class HSQLEmbededDBServer extends EmbededDBServer {
      * 
      * @see org.audit4j.core.handler.db.EmbededDBServer#getDriver()
      */
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.audit4j.handler.db.EmbededDBServer#getDriver()
+     *
+     */
     @Override
     String getDriver() {
         return driver;
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.audit4j.handler.db.EmbededDBServer#getNetworkProtocol()
+     *
+     */
     @Override
     String getNetworkProtocol() {
         return networkProtol;
