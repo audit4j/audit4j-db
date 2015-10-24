@@ -32,7 +32,7 @@ final class HSQLEmbededDBServer extends EmbededDBServer {
     private static final String driver = "org.hsqldb.jdbcDriver";
 
     /** The Constant networkProtol. */
-    private static final String networkProtol = "jdbc:hsqldb:hsql";
+    private static final String networkProtol = "jdbc:hsqldb";
     /** The instance. */
     public static HSQLEmbededDBServer instance;
 

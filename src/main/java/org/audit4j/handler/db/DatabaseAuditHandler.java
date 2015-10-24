@@ -23,9 +23,11 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.audit4j.core.ErrorGuide;
 import org.audit4j.core.exception.HandlerException;
 import org.audit4j.core.exception.InitializationException;
 import org.audit4j.core.handler.Handler;
+import org.audit4j.core.util.Log;
 
 /**
  * The Class GeneralDatabaseAuditHandler.
@@ -55,8 +57,29 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
     /** The db_connection_type. */
     private String db_connection_type;
 
+    /** The db_datasource class. */
+    private String db_datasourceClass;
+
     /** The db_jndi_datasource. */
     private String db_jndi_datasource;
+
+    /** The auto commit. */
+    private boolean db_pool_autoCommit = true;
+
+    /** The connection timeout. */
+    private Long db_pool_connectionTimeout;
+
+    /** The idle timeout. */
+    private Integer db_pool_idleTimeout;
+
+    /** The max lifetime. */
+    private Integer db_pool_maxLifetime;
+
+    /** The minimum idle. */
+    private Integer db_pool_minimumIdle;
+
+    /** The maximum pool size. */
+    private Integer db_pool_maximumPoolSize;
 
     /** The Constant POOLED_CONNECTION. */
     private static final String POOLED_CONNECTION = "pooled";
@@ -80,11 +103,14 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
     private DataSource dataSource;
 
     /** The table_prefix. */
-    private String table_prefix = "";
+    private String table_prefix;
 
     /** The table_suffix. */
     private String table_suffix = "audit";
 
+    /**
+     * Instantiates a new database audit handler.
+     */
     public DatabaseAuditHandler() {
         logDao = AuditLogDaoImpl.getInstance();
     }
@@ -98,9 +124,11 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
     @Override
     public void init() throws InitializationException {
         if (null == embedded || "true".equalsIgnoreCase(embedded)) {
+            Log.warn("Audit4j Database Handler runs on embedded mode. See " + ErrorGuide.ERROR_URL
+                    + "embeddeddb for further details.");
             server = HSQLEmbededDBServer.getInstance();
             db_driver = server.getDriver();
-            db_url = server.getNetworkProtocol() + "://localhost/audit4j";
+            db_url = server.getNetworkProtocol() + ":file:audit4jdb";
             if (db_user == null) {
                 db_user = Utils.EMBEDED_DB_USER;
             }
@@ -118,6 +146,24 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
         factory.setUrl(getDb_url());
         factory.setUser(getDb_user());
         factory.setPassword(getDb_password());
+
+        factory.setDataSourceClass(db_datasourceClass);
+        factory.setAutoCommit(db_pool_autoCommit);
+        if (db_pool_connectionTimeout != null) {
+            factory.setConnectionTimeout(db_pool_connectionTimeout);
+        }
+        if (db_pool_idleTimeout != null) {
+            factory.setIdleTimeout(db_pool_idleTimeout);
+        }
+        if (db_pool_maximumPoolSize != null) {
+            factory.setMaximumPoolSize(db_pool_maximumPoolSize);
+        }
+        if (db_pool_maxLifetime != null) {
+            factory.setMaxLifetime(db_pool_maxLifetime);
+        }
+        if (db_pool_minimumIdle != null) {
+            factory.setMinimumIdle(db_pool_minimumIdle);
+        }
 
         if (getDb_connection_type() != null && getDb_connection_type().equals(POOLED_CONNECTION)) {
             factory.setConnectionType(ConnectionType.POOLED);
@@ -151,7 +197,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
         String tag = getAuditEvent().getTag();
         if (separate && tag != null) {
             try {
-                logDao.saveEventWithNewTable(getAuditEvent(), table_prefix + "_" + tag + "_" + table_suffix);
+                logDao.saveEventWithNewTable(getAuditEvent(), generateTableName(tag));
             } catch (SQLException e) {
                 throw new HandlerException("SQL exception occured while writing the event", DatabaseAuditHandler.class,
                         e);
@@ -175,6 +221,19 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
         factory.stop();
     }
 
+    /**
+     * Generate table name.
+     *
+     * @param tag the tag
+     * @return the string
+     */
+    private String generateTableName(String tag) {
+        if (table_prefix == null) {
+            return tag + "_" + table_suffix;
+        }
+        return table_prefix + "_" + tag + "_" + table_suffix;
+    }
+    
     /**
      * Gets the db_connection_type.
      * 
@@ -347,4 +406,75 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
     public void setTable_suffix(String table_suffix) {
         this.table_suffix = table_suffix;
     }
+
+    /**
+     * Sets the db_pool_auto commit.
+     * 
+     * @param db_pool_autoCommit
+     *            the new db_pool_auto commit
+     */
+    public void setDb_pool_autoCommit(boolean db_pool_autoCommit) {
+        this.db_pool_autoCommit = db_pool_autoCommit;
+    }
+
+    /**
+     * Sets the db_pool_connection timeout.
+     * 
+     * @param db_pool_connectionTimeout
+     *            the new db_pool_connection timeout
+     */
+    public void setDb_pool_connectionTimeout(Long db_pool_connectionTimeout) {
+        this.db_pool_connectionTimeout = db_pool_connectionTimeout;
+    }
+
+    /**
+     * Sets the db_pool_idle timeout.
+     * 
+     * @param db_pool_idleTimeout
+     *            the new db_pool_idle timeout
+     */
+    public void setDb_pool_idleTimeout(Integer db_pool_idleTimeout) {
+        this.db_pool_idleTimeout = db_pool_idleTimeout;
+    }
+
+    /**
+     * Sets the db_pool_max lifetime.
+     * 
+     * @param db_pool_maxLifetime
+     *            the new db_pool_max lifetime
+     */
+    public void setDb_pool_maxLifetime(Integer db_pool_maxLifetime) {
+        this.db_pool_maxLifetime = db_pool_maxLifetime;
+    }
+
+    /**
+     * Sets the db_pool_minimum idle.
+     * 
+     * @param db_pool_minimumIdle
+     *            the new db_pool_minimum idle
+     */
+    public void setDb_pool_minimumIdle(Integer db_pool_minimumIdle) {
+        this.db_pool_minimumIdle = db_pool_minimumIdle;
+    }
+
+    /**
+     * Sets the db_pool_maximum pool size.
+     * 
+     * @param db_pool_maximumPoolSize
+     *            the new db_pool_maximum pool size
+     */
+    public void setDb_pool_maximumPoolSize(Integer db_pool_maximumPoolSize) {
+        this.db_pool_maximumPoolSize = db_pool_maximumPoolSize;
+    }
+
+    /**
+     * Sets the db_datasource class.
+     * 
+     * @param db_datasourceClass
+     *            the new db_datasource class
+     */
+    public void setDb_datasourceClass(String db_datasourceClass) {
+        this.db_datasourceClass = db_datasourceClass;
+    }
+
 }

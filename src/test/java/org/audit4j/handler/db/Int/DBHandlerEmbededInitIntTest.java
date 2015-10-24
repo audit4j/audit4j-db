@@ -16,6 +16,7 @@ public class DBHandlerEmbededInitIntTest {
     public void testInitWithPooled() {
         DatabaseAuditHandler handler = new DatabaseAuditHandler();
         handler.setDb_connection_type("pooled");
+        handler.setDb_datasourceClass("org.hsqldb.jdbc.JDBCDataSource");
         handler.init();
         handler.stop();
     }

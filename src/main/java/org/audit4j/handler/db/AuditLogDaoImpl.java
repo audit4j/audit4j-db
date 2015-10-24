@@ -88,7 +88,6 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         Connection conn = getConnection();
         PreparedStatement statement = null;
         try {
-
             statement = conn.prepareStatement(query.toString());
             statement.setString(1, uuid);
             statement.setString(2, timestamp);

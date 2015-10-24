@@ -30,10 +30,11 @@ import javax.sql.DataSource;
 import org.audit4j.core.exception.InitializationException;
 import org.audit4j.core.util.Log;
 
+import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 /**
- * A factory for creating Connection objects.
+ * A factory for creating JDBC Connections.
  * 
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
@@ -48,7 +49,8 @@ final class ConnectionFactory {
     /** The db_driver. */
     private String driver = "org.hsqldb.jdbcDriver";
 
-    private final String dataSourceClass = "org.hsqldb.jdbc.JDBCDataSource";
+    /** The data source class. */
+    private String dataSourceClass = "org.hsqldb.jdbc.JDBCDataSource";
 
     /** The db_url. */
     private String url = "jdbc:hsqldb:hsql://localhost/audit4j";
@@ -65,7 +67,29 @@ final class ConnectionFactory {
     /** The connection type. */
     private ConnectionType connectionType;
 
+    /** The ds. */
     private HikariDataSource ds;
+
+    /** The auto commit. */
+    private boolean autoCommit = true;
+
+    /** The connection timeout. */
+    private Long connectionTimeout;
+
+    /** The idle timeout. */
+    private Integer idleTimeout;
+
+    /** The max lifetime. */
+    private Integer maxLifetime;
+
+    /** The minimum idle. */
+    private Integer minimumIdle;
+
+    /** The maximum pool size. */
+    private Integer maximumPoolSize = 100;
+
+    /** The Constant CONNECTION_POOL_NAME. */
+    private static final String CONNECTION_POOL_NAME = "Audit4j-DB";
 
     /**
      * Instantiates a new connection factory.
@@ -85,10 +109,10 @@ final class ConnectionFactory {
      * @return the connection
      */
     Connection getConnection() {
-        if (dataSource != null) {
-            return getDataSourceConnection();
-        } else {
+        if (dataSource == null) {
             return getSingleConnection();
+        } else {
+            return getDataSourceConnection();
         }
     }
 
@@ -119,7 +143,7 @@ final class ConnectionFactory {
     Connection getDataSourceConnection() {
         Connection connection = null;
         try {
-            connection = ds.getConnection();
+            connection = dataSource.getConnection();
         } catch (SQLException ex) {
             throw new InitializationException("Could not obtain the db connection: Cannot get connection", ex);
         }
@@ -127,24 +151,38 @@ final class ConnectionFactory {
     }
 
     /**
-     * Inits the.
+     * initialize connection factory. This will created the necessary connection
+     * pools and jndi lookups in advance.
      */
     void init() {
         if (dataSource == null) {
             if (connectionType.equals(ConnectionType.POOLED)) {
-                ds = new HikariDataSource();
+                HikariConfig config = new HikariConfig();
+                config.setMaximumPoolSize(maximumPoolSize);
+                config.setDataSourceClassName(dataSourceClass);
+                config.addDataSourceProperty("url", url);
+                config.addDataSourceProperty("user", user);
+                config.addDataSourceProperty("password", password);
+                config.setPoolName(CONNECTION_POOL_NAME);
+                config.setAutoCommit(autoCommit);
+                config.setMaximumPoolSize(maximumPoolSize);
+                config.setConnectionTestQuery("SELECT 1");
+                
+                if (connectionTimeout != null) {
+                    config.setConnectionTimeout(connectionTimeout);
+                }
+                if (idleTimeout != null) {
+                    config.setIdleTimeout(idleTimeout);
+                }
+                if (maxLifetime != null) {
+                    config.setMaxLifetime(maxLifetime);
+                }
+                if (minimumIdle != null) {
+                    config.setMinimumIdle(minimumIdle);
+                }
 
-                ds.setMaximumPoolSize(100);
-                ds.setDataSourceClassName(dataSourceClass);
-                ds.addDataSourceProperty("url", url);
-                ds.addDataSourceProperty("user", user);
-                ds.addDataSourceProperty("password", password);
-                ds.addDataSourceProperty("maximumPoolSize", 10);
-
-                // ds.addDataSourceProperty("maxLifetime", 3000);
-                // ds.addDataSourceProperty("prepStmtCacheSqlLimit", 2048);
-                // ds.addDataSourceProperty("useServerPrepStmts", true);
-                // dataSource = ds;
+                ds = new HikariDataSource(config);
+                dataSource = ds;
 
             } else if (connectionType.equals(ConnectionType.JNDI)) {
                 if (null == jndiDataSource) {
@@ -243,6 +281,76 @@ final class ConnectionFactory {
      */
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
+    }
+
+    /**
+     * Sets the auto commit.
+     * 
+     * @param autoCommit
+     *            the new auto commit
+     */
+    public void setAutoCommit(boolean autoCommit) {
+        this.autoCommit = autoCommit;
+    }
+
+    /**
+     * Sets the connection timeout.
+     * 
+     * @param connectionTimeout
+     *            the new connection timeout
+     */
+    public void setConnectionTimeout(Long connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
+    }
+
+    /**
+     * Sets the idle timeout.
+     * 
+     * @param idleTimeout
+     *            the new idle timeout
+     */
+    public void setIdleTimeout(int idleTimeout) {
+        this.idleTimeout = idleTimeout;
+    }
+
+    /**
+     * Sets the max lifetime.
+     * 
+     * @param maxLifetime
+     *            the new max lifetime
+     */
+    public void setMaxLifetime(int maxLifetime) {
+        this.maxLifetime = maxLifetime;
+    }
+
+    /**
+     * Sets the minimum idle.
+     * 
+     * @param minimumIdle
+     *            the new minimum idle
+     */
+    public void setMinimumIdle(int minimumIdle) {
+        this.minimumIdle = minimumIdle;
+    }
+
+    /**
+     * Sets the maximum pool size.
+     * 
+     * @param maximumPoolSize
+     *            the new maximum pool size
+     */
+    public void setMaximumPoolSize(int maximumPoolSize) {
+        this.maximumPoolSize = maximumPoolSize;
+    }
+
+    /**
+     * Sets the data source class.
+     * 
+     * @param dataSourceClass
+     *            the new data source class
+     */
+    public void setDataSourceClass(String dataSourceClass) {
+        this.dataSourceClass = dataSourceClass;
     }
 
     /**
