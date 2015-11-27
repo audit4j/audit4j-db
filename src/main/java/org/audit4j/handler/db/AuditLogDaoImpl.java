@@ -85,35 +85,20 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         query.append("insert into audit(uuid, timestamp, actor, origin, action, elements) ").append(
                 "values (?, ?, ?, ?, ?, ?)");
 
-        Connection conn = getConnection();
-        PreparedStatement statement = null;
-        try {
-            statement = conn.prepareStatement(query.toString());
-            statement.setString(1, uuid);
-            statement.setString(2, timestamp);
-            statement.setString(3, event.getActor());
-            statement.setString(4, event.getOrigin());
-            statement.setString(5, event.getAction());
-            statement.setString(6, elements.toString());
-            statement.execute();
+        try (Connection conn = getConnection()) {
+            try (PreparedStatement statement = conn.prepareStatement(query.toString())) {
+                statement.setString(1, uuid);
+                statement.setString(2, timestamp);
+                statement.setString(3, event.getActor());
+                statement.setString(4, event.getOrigin());
+                statement.setString(5, event.getAction());
+                statement.setString(6, elements.toString());
+
+                return statement.execute();
+            }
         } catch (SQLException e) {
             throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
-        } finally {
-            try {
-                statement.close();
-                statement = null;
-            } catch (SQLException e) {
-                throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
-            } finally {
-                try {
-                    conn.close();
-                    conn = null;
-                } catch (SQLException e) {
-                    throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
-                }
-            }
         }
-        return true;
     }
 
     /**
@@ -133,29 +118,13 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         query.append("elements varchar(20000)");
         query.append(");");
 
-        Connection conn = getConnection();
-        PreparedStatement statement = null;
-        try {
-            statement = conn.prepareStatement(query.toString());
-            statement.execute();
+        try (Connection conn = getConnection()) {
+            try (PreparedStatement statement = conn.prepareStatement(query.toString())) {
+                return statement.execute();
+            }
         } catch (SQLException e) {
             throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
-        } finally {
-            try {
-                statement.close();
-                statement = null;
-            } catch (SQLException e) {
-                throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
-            } finally {
-                try {
-                    conn.close();
-                    conn = null;
-                } catch (SQLException e) {
-                    throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
-                }
-            }
         }
-        return true;
     }
 
     /**
