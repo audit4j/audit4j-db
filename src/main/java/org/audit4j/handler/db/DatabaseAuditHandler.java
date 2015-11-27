@@ -271,8 +271,10 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
      */
     @Override
     public void stop() {
-        server.shutdown();
         factory.stop();
+        if(server != null) {
+            server.shutdown();
+        }
     }
 
     /**
