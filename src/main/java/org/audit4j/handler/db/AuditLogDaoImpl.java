@@ -35,10 +35,14 @@ import java.util.UUID;
  */
 final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
 
-    private String tableName;
+    private final String tableName;
+    private final String insertQuery;
 
     AuditLogDaoImpl(String tableName) throws HandlerException {
         this.tableName = tableName;
+        this.insertQuery = "insert into " + tableName +
+                "(uuid, timestamp, actor, origin, action, elements) " +
+                "values (?, ?, ?, ?, ?, ?)";
 
         createAuditTableIfNotExist(tableName);
     }
@@ -78,13 +82,8 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
             elements.append(element.getName() + " " + element.getType() + ":" + element.getValue() + ", ");
         }
 
-        StringBuffer query = new StringBuffer()
-                .append("insert into ").append(tableName)
-                .append("(uuid, timestamp, actor, origin, action, elements) ")
-                .append("values (?, ?, ?, ?, ?, ?)");
-
         try (Connection conn = getConnection()) {
-            try (PreparedStatement statement = conn.prepareStatement(query.toString())) {
+            try (PreparedStatement statement = conn.prepareStatement(insertQuery)) {
                 statement.setString(1, uuid);
                 statement.setString(2, timestamp);
                 statement.setString(3, event.getActor());
@@ -113,17 +112,17 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
     }
 
     private boolean createAuditTableIfNotExist(String tableName) throws HandlerException {
-        StringBuffer query = new StringBuffer("create table if not exists ")
-        .append(tableName).append(" (")
-        .append("uuid varchar(200) NOT NULL,")
-        .append("timestamp varchar(100) NOT NULL,")
-        .append("actor varchar(200) NOT NULL,")
-        .append("origin varchar(200),")
-                .append("action varchar(200) NOT NULL,")
-                .append("elements varchar(20000)")
-        .append(");");
-
         try (Connection conn = getConnection()) {
+            StringBuffer query = new StringBuffer("create table if not exists ")
+                    .append(tableName).append(" (")
+                    .append("uuid varchar(200) NOT NULL,")
+                    .append("timestamp varchar(100) NOT NULL,")
+                    .append("actor varchar(200) NOT NULL,")
+                    .append("origin varchar(200),")
+                    .append("action varchar(200) NOT NULL,")
+                    .append("elements varchar(20000)")
+                    .append(");");
+
             try (PreparedStatement statement = conn.prepareStatement(query.toString())) {
                 return statement.execute();
             }
