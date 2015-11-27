@@ -35,19 +35,7 @@ interface AuditLogDao {
      *
      * @param event the event
      * @return true, if successful
-     * @throws SQLException the sQL exception
      * @throws HandlerException the handler exception
      */
-    boolean writeEvent(final AuditEvent event) throws SQLException, HandlerException;
-
-    /**
-     * Write event with new table.
-     *
-     * @param event the event
-     * @param tableName the table name
-     * @return true, if successful
-     * @throws SQLException the sQL exception
-     * @throws HandlerException the handler exception
-     */
-    boolean saveEventWithNewTable(final AuditEvent event, final String tableName) throws SQLException, HandlerException;
+    boolean writeEvent(final AuditEvent event) throws HandlerException;
 }

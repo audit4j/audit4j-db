@@ -22,11 +22,15 @@ import org.audit4j.core.dto.AuditEvent;
 import org.audit4j.core.dto.Field;
 import org.audit4j.core.exception.HandlerException;
 
+import java.lang.ref.SoftReference;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
+
+import static org.audit4j.handler.db.Utils.checkNotEmpty;
 
 /**
  * The Class HSQLAuditLogDao.
@@ -34,17 +38,16 @@ import java.util.UUID;
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
 final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
-
     private final String tableName;
     private final String insertQuery;
 
     AuditLogDaoImpl(String tableName) throws HandlerException {
-        this.tableName = tableName;
+        this.tableName = checkNotEmpty(tableName, "Table name must not be empty");
         this.insertQuery = "insert into " + tableName +
                 "(uuid, timestamp, actor, origin, action, elements) " +
                 "values (?, ?, ?, ?, ?, ?)";
 
-        createAuditTableIfNotExist(tableName);
+        createTableIfNotExists();
     }
 
     /*
@@ -54,11 +57,11 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
      * org.audit4j.core.handler.db.AuditLogDao#createEvent(org.audit4j.core.
      * dto.AuditEvent)
      */
+
     /**
      * {@inheritDoc}
      *
      * @see org.audit4j.handler.db.AuditLogDao#writeEvent(org.audit4j.core.dto.AuditEvent)
-     *
      */
     @Override
     public boolean writeEvent(AuditEvent event) throws HandlerException {
@@ -98,20 +101,7 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.audit4j.handler.db.AuditLogDao#saveEventWithNewTable(org.audit4j.core.dto.AuditEvent, java.lang.String)
-     *
-     */
-    @Override
-    public boolean saveEventWithNewTable(AuditEvent event, String tableName) throws HandlerException {
-        createAuditTableIfNotExist(tableName);
-        writeEvent(event);
-        return true;
-    }
-
-    private boolean createAuditTableIfNotExist(String tableName) throws HandlerException {
+    private boolean createTableIfNotExists() throws HandlerException {
         try (Connection conn = getConnection()) {
             StringBuffer query = new StringBuffer("create table if not exists ")
                     .append(tableName).append(" (")

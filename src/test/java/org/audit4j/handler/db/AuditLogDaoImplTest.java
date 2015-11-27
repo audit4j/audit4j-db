@@ -3,9 +3,9 @@ package org.audit4j.handler.db;
 import org.audit4j.core.dto.EventBuilder;
 import org.audit4j.core.exception.HandlerException;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import reactor.util.Assert;
 
 import java.sql.SQLException;
 
@@ -31,11 +31,16 @@ public class AuditLogDaoImplTest {
         connectionFactory.init();
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void it_should_throw_error_on_invalid_table_name() throws HandlerException, SQLException {
+        AuditLogDao logDao = new AuditLogDaoImpl("");
+        Assert.fail("Should have thrown exception");
+    }
+
     @Test
     public void testcreateAuditTableIFNotExist() throws HandlerException, SQLException {
         AuditLogDao logDao = new AuditLogDaoImpl(ANY_TABLE_NAME);
-
-        Assert.notNull(logDao);
+        Assert.assertNotNull(logDao);
     }
 
     @Test
