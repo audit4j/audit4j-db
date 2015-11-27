@@ -30,7 +30,7 @@ import org.audit4j.core.exception.HandlerException;
 
 /**
  * The Class HSQLAuditLogDao.
- * 
+ *
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
 final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
@@ -56,7 +56,7 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
      */
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.audit4j.handler.db.AuditLogDao#writeEvent(org.audit4j.core.dto.AuditEvent)
      *
      */
@@ -118,7 +118,7 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.audit4j.handler.db.AuditLogDao#createAuditTableIFNotExist(java.lang.String)
      *
      */
@@ -160,7 +160,7 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.audit4j.handler.db.AuditLogDao#saveEventWithNewTable(org.audit4j.core.dto.AuditEvent, java.lang.String)
      *
      */

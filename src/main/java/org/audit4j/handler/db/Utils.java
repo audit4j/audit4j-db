@@ -23,17 +23,21 @@ package org.audit4j.handler.db;
  *
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
-public class Utils {
-    
+public final class Utils {
+
     /** The Constant EMBEDED_DB_NAME. */
     static final String EMBEDED_DB_NAME = "audit4j";
-    
+
     /** The Constant EMBEDED_DB_USER. */
     static final String EMBEDED_DB_USER = "audit4jdbuser";
-    
+
     /** The Constant EMBEDED_DB_PASSWORD. */
     static final String EMBEDED_DB_PASSWORD = "audit4jdbpassword";
-    
+
+    private Utils() {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Gets the dB name.
      *
