@@ -35,14 +35,9 @@ import java.util.UUID;
  */
 final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
 
-    /** The audit dao. */
-    public static AuditLogDao auditDao;
-
     private String tableName;
-    /**
-     * Instantiates a new audit log dao impl.
-     */
-    private AuditLogDaoImpl(String tableName) throws HandlerException {
+
+    AuditLogDaoImpl(String tableName) throws HandlerException {
         this.tableName = tableName;
 
         createAuditTableIfNotExist(tableName);
@@ -82,6 +77,7 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         for (Field element : event.getFields()) {
             elements.append(element.getName() + " " + element.getType() + ":" + element.getValue() + ", ");
         }
+
         StringBuffer query = new StringBuffer()
                 .append("insert into ").append(tableName)
                 .append("(uuid, timestamp, actor, origin, action, elements) ")
@@ -134,17 +130,5 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         } catch (SQLException e) {
             throw new HandlerException("SQL Exception", DatabaseAuditHandler.class, e);
         }
-    }
-
-    /**
-     * Gets the single instance of AuditLogDaoImpl.
-     *
-     * @return single instance of AuditLogDaoImpl
-     */
-    public static AuditLogDao getInstance() throws HandlerException {
-        synchronized (AuditLogDaoImpl.class) {
-            auditDao = new AuditLogDaoImpl("audit");
-        }
-        return auditDao;
     }
 }

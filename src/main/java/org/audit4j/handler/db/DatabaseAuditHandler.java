@@ -18,16 +18,15 @@
 
 package org.audit4j.handler.db;
 
-import java.io.Serializable;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
 import org.audit4j.core.ErrorGuide;
 import org.audit4j.core.exception.HandlerException;
 import org.audit4j.core.exception.InitializationException;
 import org.audit4j.core.handler.Handler;
 import org.audit4j.core.util.Log;
+
+import javax.sql.DataSource;
+import java.io.Serializable;
+import java.sql.SQLException;
 
 /**
  * The Class GeneralDatabaseAuditHandler.
@@ -176,7 +175,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
         factory.init();
 
         try {
-            logDao = AuditLogDaoImpl.getInstance();
+            logDao = new AuditLogDaoImpl("audit");
         } catch (HandlerException e) {
             throw new InitializationException("Unable to create tables", e);
         }
