@@ -94,7 +94,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
     private ConnectionFactory factory;
 
     /** The log dao. */
-    private final AuditLogDao logDao;
+    private AuditLogDao logDao;
 
     /** The separate. */
     private boolean separate = false;
@@ -112,7 +112,6 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
      * Instantiates a new database audit handler.
      */
     public DatabaseAuditHandler() {
-        logDao = AuditLogDaoImpl.getInstance();
     }
 
     /**
@@ -177,7 +176,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
         factory.init();
 
         try {
-            logDao.createAuditTableIFNotExist("audit");
+            logDao = AuditLogDaoImpl.getInstance();
         } catch (HandlerException e) {
             throw new InitializationException("Unable to create tables", e);
         }

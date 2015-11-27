@@ -35,9 +35,6 @@ import java.util.UUID;
  */
 final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
 
-    /** The initialized. */
-    public static boolean initialized = false;
-
     /** The audit dao. */
     public static AuditLogDao auditDao;
 
@@ -45,8 +42,10 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
     /**
      * Instantiates a new audit log dao impl.
      */
-    private AuditLogDaoImpl(String tableName) {
+    private AuditLogDaoImpl(String tableName) throws HandlerException {
         this.tableName = tableName;
+
+        createAuditTableIfNotExist(tableName);
     }
 
     /*
@@ -107,19 +106,25 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
     /**
      * {@inheritDoc}
      *
-     * @see org.audit4j.handler.db.AuditLogDao#createAuditTableIFNotExist(java.lang.String)
+     * @see org.audit4j.handler.db.AuditLogDao#saveEventWithNewTable(org.audit4j.core.dto.AuditEvent, java.lang.String)
      *
      */
     @Override
-    public boolean createAuditTableIFNotExist(String tableName) throws HandlerException {
+    public boolean saveEventWithNewTable(AuditEvent event, String tableName) throws HandlerException {
+        createAuditTableIfNotExist(tableName);
+        writeEvent(event);
+        return true;
+    }
+
+    private boolean createAuditTableIfNotExist(String tableName) throws HandlerException {
         StringBuffer query = new StringBuffer("create table if not exists ")
         .append(tableName).append(" (")
         .append("uuid varchar(200) NOT NULL,")
         .append("timestamp varchar(100) NOT NULL,")
         .append("actor varchar(200) NOT NULL,")
         .append("origin varchar(200),")
-        .append("action varchar(200) NOT NULL,")
-        .append("elements varchar(20000)")
+                .append("action varchar(200) NOT NULL,")
+                .append("elements varchar(20000)")
         .append(");");
 
         try (Connection conn = getConnection()) {
@@ -132,29 +137,13 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @see org.audit4j.handler.db.AuditLogDao#saveEventWithNewTable(org.audit4j.core.dto.AuditEvent, java.lang.String)
-     *
-     */
-    @Override
-    public boolean saveEventWithNewTable(AuditEvent event, String tableName) throws HandlerException {
-        createAuditTableIFNotExist(tableName);
-        writeEvent(event);
-        return true;
-    }
-
-    /**
      * Gets the single instance of AuditLogDaoImpl.
      *
      * @return single instance of AuditLogDaoImpl
      */
-    public static AuditLogDao getInstance() {
+    public static AuditLogDao getInstance() throws HandlerException {
         synchronized (AuditLogDaoImpl.class) {
-            if (!initialized) {
-                auditDao = new AuditLogDaoImpl("audit");
-                initialized = true;
-            }
+            auditDao = new AuditLogDaoImpl("audit");
         }
         return auditDao;
     }
