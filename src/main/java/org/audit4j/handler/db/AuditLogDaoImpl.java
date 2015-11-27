@@ -18,15 +18,15 @@
 
 package org.audit4j.handler.db;
 
+import org.audit4j.core.dto.AuditEvent;
+import org.audit4j.core.dto.Field;
+import org.audit4j.core.exception.HandlerException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.UUID;
-
-import org.audit4j.core.dto.AuditEvent;
-import org.audit4j.core.dto.Field;
-import org.audit4j.core.exception.HandlerException;
 
 /**
  * The Class HSQLAuditLogDao.
@@ -41,10 +41,12 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
     /** The audit dao. */
     public static AuditLogDao auditDao;
 
+    private String tableName;
     /**
      * Instantiates a new audit log dao impl.
      */
-    private AuditLogDaoImpl() {
+    private AuditLogDaoImpl(String tableName) {
+        this.tableName = tableName;
     }
 
     /*
@@ -81,9 +83,10 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
         for (Field element : event.getFields()) {
             elements.append(element.getName() + " " + element.getType() + ":" + element.getValue() + ", ");
         }
-        StringBuffer query = new StringBuffer();
-        query.append("insert into audit(uuid, timestamp, actor, origin, action, elements) ").append(
-                "values (?, ?, ?, ?, ?, ?)");
+        StringBuffer query = new StringBuffer()
+                .append("insert into ").append(tableName)
+                .append("(uuid, timestamp, actor, origin, action, elements) ")
+                .append("values (?, ?, ?, ?, ?, ?)");
 
         try (Connection conn = getConnection()) {
             try (PreparedStatement statement = conn.prepareStatement(query.toString())) {
@@ -109,14 +112,15 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
      */
     @Override
     public boolean createAuditTableIFNotExist(String tableName) throws HandlerException {
-        StringBuffer query = new StringBuffer("create table if not exists " + tableName + " (");
-        query.append("uuid varchar(200) NOT NULL,");
-        query.append("timestamp varchar(100) NOT NULL,");
-        query.append("actor varchar(200) NOT NULL,");
-        query.append("origin varchar(200),");
-        query.append("action varchar(200) NOT NULL,");
-        query.append("elements varchar(20000)");
-        query.append(");");
+        StringBuffer query = new StringBuffer("create table if not exists ")
+        .append(tableName).append(" (")
+        .append("uuid varchar(200) NOT NULL,")
+        .append("timestamp varchar(100) NOT NULL,")
+        .append("actor varchar(200) NOT NULL,")
+        .append("origin varchar(200),")
+        .append("action varchar(200) NOT NULL,")
+        .append("elements varchar(20000)")
+        .append(");");
 
         try (Connection conn = getConnection()) {
             try (PreparedStatement statement = conn.prepareStatement(query.toString())) {
@@ -148,7 +152,7 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
     public static AuditLogDao getInstance() {
         synchronized (AuditLogDaoImpl.class) {
             if (!initialized) {
-                auditDao = new AuditLogDaoImpl();
+                auditDao = new AuditLogDaoImpl("audit");
                 initialized = true;
             }
         }
