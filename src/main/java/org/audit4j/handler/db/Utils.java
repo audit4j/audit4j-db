@@ -23,17 +23,27 @@ package org.audit4j.handler.db;
  *
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
-public class Utils {
-    
-    /** The Constant EMBEDED_DB_NAME. */
+public final class Utils {
+
+    /**
+     * The Constant EMBEDED_DB_NAME.
+     */
     static final String EMBEDED_DB_NAME = "audit4j";
-    
-    /** The Constant EMBEDED_DB_USER. */
+
+    /**
+     * The Constant EMBEDED_DB_USER.
+     */
     static final String EMBEDED_DB_USER = "audit4jdbuser";
-    
-    /** The Constant EMBEDED_DB_PASSWORD. */
+
+    /**
+     * The Constant EMBEDED_DB_PASSWORD.
+     */
     static final String EMBEDED_DB_PASSWORD = "audit4jdbpassword";
-    
+
+    private Utils() {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Gets the dB name.
      *
@@ -46,5 +56,32 @@ public class Utils {
         buffer.append("@");
         buffer.append(userName);
         return buffer.toString();
+    }
+
+    /**
+     * Throws a NullPointerException if given parameter is <code>null</code>
+     *
+     * @param t the parameter to check
+     * @return the provided parameter
+     */
+    public static <T> T checkNotNull(T t) {
+        if (t == null) {
+            throw new NullPointerException();
+        }
+        return t;
+    }
+
+    /**
+     * Throws a IllegalArgumentException if given String is empty
+     *
+     * @param str     the parameter to check
+     * @param message the parameter to check
+     * @return the provided parameter
+     */
+    public static String checkNotEmpty(String str, String message) {
+        if (checkNotNull(str).isEmpty()) {
+            throw new IllegalArgumentException(message);
+        }
+        return str;
     }
 }
