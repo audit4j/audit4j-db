@@ -18,6 +18,10 @@
 
 package org.audit4j.handler.db;
 
+import com.google.common.base.Throwables;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.audit4j.core.ErrorGuide;
 import org.audit4j.core.exception.HandlerException;
 import org.audit4j.core.exception.InitializationException;
@@ -26,9 +30,8 @@ import org.audit4j.core.util.Log;
 
 import javax.sql.DataSource;
 import java.io.Serializable;
-import java.lang.ref.SoftReference;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.audit4j.handler.db.Utils.checkNotEmpty;
 
@@ -46,21 +49,14 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     private static final String DEFAULT_TABLE_NAME = "audit";
 
-    private static Map<String, SoftReference<AuditLogDao>> instances = new HashMap<>();
-
-    private static AuditLogDao getDaoInstance(String tableName) throws HandlerException {
-        checkNotEmpty(tableName, "Argument must not be empty");
-
-        SoftReference<AuditLogDao> auditLogDaoSoftReference = instances.get(tableName);
-        if (auditLogDaoSoftReference == null || auditLogDaoSoftReference.get() == null) {
-            final AuditLogDaoImpl auditLogDao = new AuditLogDaoImpl(tableName);
-            auditLogDaoSoftReference = new SoftReference<AuditLogDao>(auditLogDao);
-            instances.put(tableName, auditLogDaoSoftReference);
-        }
-
-        return auditLogDaoSoftReference.get();
-    }
-
+    private LoadingCache<String, AuditLogDao> daos = CacheBuilder.newBuilder()
+            .maximumSize(1000)
+            .expireAfterAccess(15, TimeUnit.MINUTES)
+            .build(new CacheLoader<String, AuditLogDao>() {
+                public AuditLogDao load(String tableName) throws HandlerException {
+                    return new AuditLogDaoImpl(tableName);
+                }
+            });
     /**
      * The embeded.
      */
@@ -243,7 +239,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
         factory.init();
 
         try {
-            getDaoInstance(default_table_name);
+            getDaoForTable(default_table_name);
         } catch (HandlerException e) {
             throw new InitializationException("Unable to create tables", e);
         }
@@ -263,7 +259,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
         boolean writeInDefaultTable = !separate || tag == null;
         String tableName = writeInDefaultTable ? default_table_name : generateTableName(tag);
 
-        getDaoInstance(tableName).writeEvent(getAuditEvent());
+        getDaoForTable(tableName).writeEvent(getAuditEvent());
     }
 
     /**
@@ -272,7 +268,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
     @Override
     public void stop() {
         factory.stop();
-        if(server != null) {
+        if (server != null) {
             server.shutdown();
         }
     }
@@ -289,6 +285,16 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
         }
         return table_prefix + "_" + tag + "_" + table_suffix;
     }
+
+    private AuditLogDao getDaoForTable(String tableName) throws HandlerException {
+        try {
+            return daos.get(tableName);
+        } catch (ExecutionException e) {
+            Throwables.propagateIfInstanceOf(e.getCause(), HandlerException.class);
+            throw new HandlerException("Execution Exception", DatabaseAuditHandler.class, e);
+        }
+    }
+
 
     /**
      * Gets the db_connection_type.
