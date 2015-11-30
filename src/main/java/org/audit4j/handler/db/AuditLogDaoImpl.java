@@ -18,19 +18,17 @@
 
 package org.audit4j.handler.db;
 
-import org.audit4j.core.dto.AuditEvent;
-import org.audit4j.core.dto.Field;
-import org.audit4j.core.exception.HandlerException;
+import static org.audit4j.handler.db.Utils.checkNotEmpty;
 
-import java.lang.ref.SoftReference;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.UUID;
 
-import static org.audit4j.handler.db.Utils.checkNotEmpty;
+import org.audit4j.core.dto.AuditEvent;
+import org.audit4j.core.dto.Field;
+import org.audit4j.core.exception.HandlerException;
 
 /**
  * The Class HSQLAuditLogDao.

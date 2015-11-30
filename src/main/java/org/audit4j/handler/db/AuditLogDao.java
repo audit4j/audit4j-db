@@ -21,8 +21,6 @@ package org.audit4j.handler.db;
 import org.audit4j.core.dto.AuditEvent;
 import org.audit4j.core.exception.HandlerException;
 
-import java.sql.SQLException;
-
 /**
  * The Interface AuditLogDao.
  *

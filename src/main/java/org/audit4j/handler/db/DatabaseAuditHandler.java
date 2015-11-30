@@ -18,29 +18,30 @@
 
 package org.audit4j.handler.db;
 
-import com.google.common.base.Throwables;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import static org.audit4j.handler.db.Utils.checkNotEmpty;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import javax.sql.DataSource;
+
 import org.audit4j.core.ErrorGuide;
 import org.audit4j.core.exception.HandlerException;
 import org.audit4j.core.exception.InitializationException;
 import org.audit4j.core.handler.Handler;
 import org.audit4j.core.util.Log;
 
-import javax.sql.DataSource;
-import java.io.Serializable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import static org.audit4j.handler.db.Utils.checkNotEmpty;
+import com.google.common.base.Throwables;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 /**
  * The Class GeneralDatabaseAuditHandler.
  *
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
-public class DatabaseAuditHandler extends Handler implements Serializable {
+public class DatabaseAuditHandler extends Handler {
 
     /**
      * The Constant serialVersionUID.
@@ -49,10 +50,11 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     private static final String DEFAULT_TABLE_NAME = "audit";
 
-    private LoadingCache<String, AuditLogDao> daos = CacheBuilder.newBuilder()
+    private final LoadingCache<String, AuditLogDao> daos = CacheBuilder.newBuilder()
             .maximumSize(1000)
             .expireAfterAccess(15, TimeUnit.MINUTES)
             .build(new CacheLoader<String, AuditLogDao>() {
+                @Override
                 public AuditLogDao load(String tableName) throws HandlerException {
                     return new AuditLogDaoImpl(tableName);
                 }
