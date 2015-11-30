@@ -18,108 +18,170 @@
 
 package org.audit4j.handler.db;
 
-import java.io.Serializable;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
+import com.google.common.base.Throwables;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.audit4j.core.ErrorGuide;
 import org.audit4j.core.exception.HandlerException;
 import org.audit4j.core.exception.InitializationException;
 import org.audit4j.core.handler.Handler;
 import org.audit4j.core.util.Log;
 
+import javax.sql.DataSource;
+import java.io.Serializable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import static org.audit4j.handler.db.Utils.checkNotEmpty;
+
 /**
  * The Class GeneralDatabaseAuditHandler.
- * 
+ *
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
  */
 public class DatabaseAuditHandler extends Handler implements Serializable {
 
-    /** The Constant serialVersionUID. */
+    /**
+     * The Constant serialVersionUID.
+     */
     private static final long serialVersionUID = -4994028889410866952L;
 
-    /** The embeded. */
+    private static final String DEFAULT_TABLE_NAME = "audit";
+
+    private LoadingCache<String, AuditLogDao> daos = CacheBuilder.newBuilder()
+            .maximumSize(1000)
+            .expireAfterAccess(15, TimeUnit.MINUTES)
+            .build(new CacheLoader<String, AuditLogDao>() {
+                public AuditLogDao load(String tableName) throws HandlerException {
+                    return new AuditLogDaoImpl(tableName);
+                }
+            });
+    /**
+     * The embeded.
+     */
     private String embedded;
 
-    /** The db_driver. */
+    /**
+     * The db_driver.
+     */
     private String db_driver;
 
-    /** The db_url. */
+    /**
+     * The db_url.
+     */
     private String db_url;
 
-    /** The db_user. */
+    /**
+     * The db_user.
+     */
     private String db_user;
 
-    /** The db_password. */
+    /**
+     * The db_password.
+     */
     private String db_password;
 
-    /** The db_connection_type. */
+    /**
+     * The db_connection_type.
+     */
     private String db_connection_type;
 
-    /** The db_datasource class. */
+    /**
+     * The db_datasource class.
+     */
     private String db_datasourceClass;
 
-    /** The db_jndi_datasource. */
+    /**
+     * The db_jndi_datasource.
+     */
     private String db_jndi_datasource;
 
-    /** The auto commit. */
+    /**
+     * The auto commit.
+     */
     private boolean db_pool_autoCommit = true;
 
-    /** The connection timeout. */
+    /**
+     * The connection timeout.
+     */
     private Long db_pool_connectionTimeout;
 
-    /** The idle timeout. */
+    /**
+     * The idle timeout.
+     */
     private Integer db_pool_idleTimeout;
 
-    /** The max lifetime. */
+    /**
+     * The max lifetime.
+     */
     private Integer db_pool_maxLifetime;
 
-    /** The minimum idle. */
+    /**
+     * The minimum idle.
+     */
     private Integer db_pool_minimumIdle;
 
-    /** The maximum pool size. */
+    /**
+     * The maximum pool size.
+     */
     private Integer db_pool_maximumPoolSize;
 
-    /** The Constant POOLED_CONNECTION. */
+    /**
+     * The Constant POOLED_CONNECTION.
+     */
     private static final String POOLED_CONNECTION = "pooled";
 
-    /** The Constant JNDI_CONNECTION. */
+    /**
+     * The Constant JNDI_CONNECTION.
+     */
     private static final String JNDI_CONNECTION = "jndi";
 
-    /** The server. */
+    /**
+     * The server.
+     */
     private EmbededDBServer server;
 
-    /** The factory. */
+    /**
+     * The factory.
+     */
     private ConnectionFactory factory;
 
-    /** The log dao. */
-    private final AuditLogDao logDao;
-
-    /** The separate. */
+    /**
+     * The separate.
+     */
     private boolean separate = false;
 
-    /** The data source. */
+    /**
+     * The data source.
+     */
     private DataSource dataSource;
 
-    /** The table_prefix. */
+    /**
+     * The table_prefix.
+     */
     private String table_prefix;
 
-    /** The table_suffix. */
+    /**
+     * The table_suffix.
+     */
     private String table_suffix = "audit";
+
+    /**
+     * The default_table_suffix.
+     */
+    private String default_table_name = DEFAULT_TABLE_NAME;
 
     /**
      * Instantiates a new database audit handler.
      */
     public DatabaseAuditHandler() {
-        logDao = AuditLogDaoImpl.getInstance();
     }
 
     /**
      * Initialize database handler.
-     * 
-     * @throws InitializationException
-     *             the initialization exception
+     *
+     * @throws InitializationException the initialization exception
      */
     @Override
     public void init() throws InitializationException {
@@ -177,7 +239,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
         factory.init();
 
         try {
-            logDao.createAuditTableIFNotExist("audit");
+            getDaoForTable(default_table_name);
         } catch (HandlerException e) {
             throw new InitializationException("Unable to create tables", e);
         }
@@ -186,30 +248,18 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Handle event.
-     * 
+     * <p>
      * {@inheritDoc}
-     * 
+     *
      * @see org.audit4j.core.handler.Handler#handle()
-     * 
      */
     @Override
     public void handle() throws HandlerException {
         String tag = getAuditEvent().getTag();
-        if (separate && tag != null) {
-            try {
-                logDao.saveEventWithNewTable(getAuditEvent(), generateTableName(tag));
-            } catch (SQLException e) {
-                throw new HandlerException("SQL exception occured while writing the event", DatabaseAuditHandler.class,
-                        e);
-            }
-        } else {
-            try {
-                logDao.writeEvent(getAuditEvent());
-            } catch (SQLException e) {
-                throw new HandlerException("SQL exception occured while writing the event", DatabaseAuditHandler.class,
-                        e);
-            }
-        }
+        boolean writeInDefaultTable = !separate || tag == null;
+        String tableName = writeInDefaultTable ? default_table_name : generateTableName(tag);
+
+        getDaoForTable(tableName).writeEvent(getAuditEvent());
     }
 
     /**
@@ -217,8 +267,10 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
      */
     @Override
     public void stop() {
-        server.shutdown();
         factory.stop();
+        if (server != null) {
+            server.shutdown();
+        }
     }
 
     /**
@@ -233,10 +285,20 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
         }
         return table_prefix + "_" + tag + "_" + table_suffix;
     }
-    
+
+    private AuditLogDao getDaoForTable(String tableName) throws HandlerException {
+        try {
+            return daos.get(tableName);
+        } catch (ExecutionException e) {
+            Throwables.propagateIfInstanceOf(e.getCause(), HandlerException.class);
+            throw new HandlerException("Execution Exception", DatabaseAuditHandler.class, e);
+        }
+    }
+
+
     /**
      * Gets the db_connection_type.
-     * 
+     *
      * @return the db_connection_type
      */
     public String getDb_connection_type() {
@@ -245,9 +307,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the db_connection_type.
-     * 
-     * @param db_connection_type
-     *            the new db_connection_type
+     *
+     * @param db_connection_type the new db_connection_type
      */
     public void setDb_connection_type(String db_connection_type) {
         this.db_connection_type = db_connection_type;
@@ -255,7 +316,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Gets the embedded.
-     * 
+     *
      * @return the embedded
      */
     public String getEmbedded() {
@@ -264,9 +325,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the embedded.
-     * 
-     * @param embedded
-     *            the new embedded
+     *
+     * @param embedded the new embedded
      */
     public void setEmbedded(String embedded) {
         this.embedded = embedded;
@@ -274,7 +334,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Gets the db_driver.
-     * 
+     *
      * @return the db_driver
      */
     public String getDb_driver() {
@@ -283,9 +343,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the db_driver.
-     * 
-     * @param db_driver
-     *            the new db_driver
+     *
+     * @param db_driver the new db_driver
      */
     public void setDb_driver(String db_driver) {
         this.db_driver = db_driver;
@@ -293,7 +352,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Gets the db_url.
-     * 
+     *
      * @return the db_url
      */
     public String getDb_url() {
@@ -302,9 +361,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the db_url.
-     * 
-     * @param db_url
-     *            the new db_url
+     *
+     * @param db_url the new db_url
      */
     public void setDb_url(String db_url) {
         this.db_url = db_url;
@@ -312,7 +370,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Gets the db_user.
-     * 
+     *
      * @return the db_user
      */
     public String getDb_user() {
@@ -321,9 +379,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the db_user.
-     * 
-     * @param db_user
-     *            the new db_user
+     *
+     * @param db_user the new db_user
      */
     public void setDb_user(String db_user) {
         this.db_user = db_user;
@@ -331,7 +388,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Gets the db_password.
-     * 
+     *
      * @return the db_password
      */
     public String getDb_password() {
@@ -340,9 +397,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the db_password.
-     * 
-     * @param db_password
-     *            the new db_password
+     *
+     * @param db_password the new db_password
      */
     public void setDb_password(String db_password) {
         this.db_password = db_password;
@@ -350,7 +406,7 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Gets the db_jndi_datasource.
-     * 
+     *
      * @return the db_jndi_datasource
      */
     public String getDb_jndi_datasource() {
@@ -359,9 +415,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the db_jndi_datasource.
-     * 
-     * @param db_jndi_datasource
-     *            the new db_jndi_datasource
+     *
+     * @param db_jndi_datasource the new db_jndi_datasource
      */
     public void setDb_jndi_datasource(String db_jndi_datasource) {
         this.db_jndi_datasource = db_jndi_datasource;
@@ -369,9 +424,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the separate.
-     * 
-     * @param separate
-     *            the new separate
+     *
+     * @param separate the new separate
      */
     public void setSeparate(boolean separate) {
         this.separate = separate;
@@ -379,9 +433,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the data source.
-     * 
-     * @param dataSource
-     *            the new data source
+     *
+     * @param dataSource the new data source
      */
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -389,9 +442,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the table_prefix.
-     * 
-     * @param table_prefix
-     *            the new table_prefix
+     *
+     * @param table_prefix the new table_prefix
      */
     public void setTable_prefix(String table_prefix) {
         this.table_prefix = table_prefix;
@@ -399,19 +451,26 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the table_suffix.
-     * 
-     * @param table_suffix
-     *            the new table_suffix
+     *
+     * @param table_suffix the new table_suffix
      */
     public void setTable_suffix(String table_suffix) {
         this.table_suffix = table_suffix;
     }
 
     /**
+     * Sets the default_table_name.
+     *
+     * @param default_table_name the new default_table_name
+     */
+    public void setDefault_table_name(String default_table_name) {
+        this.default_table_name = checkNotEmpty(default_table_name, "Table name must not be empty");
+    }
+
+    /**
      * Sets the db_pool_auto commit.
-     * 
-     * @param db_pool_autoCommit
-     *            the new db_pool_auto commit
+     *
+     * @param db_pool_autoCommit the new db_pool_auto commit
      */
     public void setDb_pool_autoCommit(boolean db_pool_autoCommit) {
         this.db_pool_autoCommit = db_pool_autoCommit;
@@ -419,9 +478,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the db_pool_connection timeout.
-     * 
-     * @param db_pool_connectionTimeout
-     *            the new db_pool_connection timeout
+     *
+     * @param db_pool_connectionTimeout the new db_pool_connection timeout
      */
     public void setDb_pool_connectionTimeout(Long db_pool_connectionTimeout) {
         this.db_pool_connectionTimeout = db_pool_connectionTimeout;
@@ -429,9 +487,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the db_pool_idle timeout.
-     * 
-     * @param db_pool_idleTimeout
-     *            the new db_pool_idle timeout
+     *
+     * @param db_pool_idleTimeout the new db_pool_idle timeout
      */
     public void setDb_pool_idleTimeout(Integer db_pool_idleTimeout) {
         this.db_pool_idleTimeout = db_pool_idleTimeout;
@@ -439,9 +496,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the db_pool_max lifetime.
-     * 
-     * @param db_pool_maxLifetime
-     *            the new db_pool_max lifetime
+     *
+     * @param db_pool_maxLifetime the new db_pool_max lifetime
      */
     public void setDb_pool_maxLifetime(Integer db_pool_maxLifetime) {
         this.db_pool_maxLifetime = db_pool_maxLifetime;
@@ -449,9 +505,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the db_pool_minimum idle.
-     * 
-     * @param db_pool_minimumIdle
-     *            the new db_pool_minimum idle
+     *
+     * @param db_pool_minimumIdle the new db_pool_minimum idle
      */
     public void setDb_pool_minimumIdle(Integer db_pool_minimumIdle) {
         this.db_pool_minimumIdle = db_pool_minimumIdle;
@@ -459,9 +514,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the db_pool_maximum pool size.
-     * 
-     * @param db_pool_maximumPoolSize
-     *            the new db_pool_maximum pool size
+     *
+     * @param db_pool_maximumPoolSize the new db_pool_maximum pool size
      */
     public void setDb_pool_maximumPoolSize(Integer db_pool_maximumPoolSize) {
         this.db_pool_maximumPoolSize = db_pool_maximumPoolSize;
@@ -469,9 +523,8 @@ public class DatabaseAuditHandler extends Handler implements Serializable {
 
     /**
      * Sets the db_datasource class.
-     * 
-     * @param db_datasourceClass
-     *            the new db_datasource class
+     *
+     * @param db_datasourceClass the new db_datasource class
      */
     public void setDb_datasourceClass(String db_datasourceClass) {
         this.db_datasourceClass = db_datasourceClass;
