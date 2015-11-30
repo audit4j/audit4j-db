@@ -50,6 +50,9 @@ public class DatabaseAuditHandler extends Handler {
 
     private static final String DEFAULT_TABLE_NAME = "audit";
 
+    /**
+     * Creating cache for Data access objects for different tables.
+     */
     private final LoadingCache<String, AuditLogDao> daos = CacheBuilder.newBuilder()
             .maximumSize(1000)
             .expireAfterAccess(15, TimeUnit.MINUTES)

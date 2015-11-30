@@ -23,8 +23,7 @@ import static org.audit4j.handler.db.Utils.checkNotEmpty;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.UUID;
+import java.sql.Timestamp;
 
 import org.audit4j.core.dto.AuditEvent;
 import org.audit4j.core.dto.Field;
@@ -63,30 +62,15 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
      */
     @Override
     public boolean writeEvent(AuditEvent event) throws HandlerException {
-        String uuid;
-        String timestamp;
         StringBuilder elements = new StringBuilder();
-
-        if (event.getUuid() == null) {
-            uuid = String.valueOf(UUID.randomUUID().getMostSignificantBits());
-        } else {
-            uuid = event.getUuid().toString();
-        }
-
-        if (event.getTimestamp() == null) {
-            timestamp = new Date().toString();
-        } else {
-            timestamp = event.getTimestamp().toString();
-        }
-
         for (Field element : event.getFields()) {
             elements.append(element.getName() + " " + element.getType() + ":" + element.getValue() + ", ");
         }
 
         try (Connection conn = getConnection()) {
             try (PreparedStatement statement = conn.prepareStatement(insertQuery)) {
-                statement.setString(1, uuid);
-                statement.setString(2, timestamp);
+                statement.setString(1, event.getUuid().toString());
+                statement.setTimestamp(2, new Timestamp(event.getTimestamp().getTime()));
                 statement.setString(3, event.getActor());
                 statement.setString(4, event.getOrigin());
                 statement.setString(5, event.getAction());
@@ -101,14 +85,14 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
 
     private boolean createTableIfNotExists() throws HandlerException {
         try (Connection conn = getConnection()) {
-            StringBuffer query = new StringBuffer("create table if not exists ")
+            StringBuilder query = new StringBuilder("create table if not exists ")
                     .append(tableName).append(" (")
-                    .append("uuid varchar(200) NOT NULL,")
-                    .append("timestamp varchar(100) NOT NULL,")
-                    .append("actor varchar(200) NOT NULL,")
-                    .append("origin varchar(200),")
-                    .append("action varchar(200) NOT NULL,")
-                    .append("elements varchar(20000)")
+                    .append("uuid VARCHAR(200) NOT NULL,")
+                    .append("timestamp TIMESTAMP NOT NULL,")
+                    .append("actor VARCHAR(200) NOT NULL,")
+                    .append("origin VARCHAR(200),")
+                    .append("action VARCHAR(200) NOT NULL,")
+                    .append("elements TEXT")
                     .append(");");
 
             try (PreparedStatement statement = conn.prepareStatement(query.toString())) {
