@@ -40,6 +40,7 @@ import com.google.common.cache.LoadingCache;
  * The Class GeneralDatabaseAuditHandler.
  *
  * @author <a href="mailto:janith3000@gmail.com">Janith Bandara</a>
+ * @author Thebora Kompanioni https://github.com/theborakompanioni
  */
 public class DatabaseAuditHandler extends Handler {
 

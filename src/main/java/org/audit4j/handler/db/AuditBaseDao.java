@@ -36,4 +36,15 @@ class AuditBaseDao {
 		ConnectionFactory factory = ConnectionFactory.getInstance();
 		return factory.getConnection();
 	}
+	
+	/**
+	 * Check if the database is oracle
+	 * 
+	 * @return true if database is oracle.
+	 */
+	protected boolean isOracleDatabase() {
+		ConnectionFactory factory = ConnectionFactory.getInstance();
+		Connection connection = factory.getConnection();
+		return connection.getClass().getName().contains("oracle");
+	}
 }
