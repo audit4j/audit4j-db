@@ -19,6 +19,9 @@
 package org.audit4j.handler.db;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+
+import org.audit4j.core.exception.HandlerException;
 
 /**
  * The Class AuditBaseDao.
@@ -27,24 +30,61 @@ import java.sql.Connection;
  */
 class AuditBaseDao {
 
-	/**
-	 * Gets the connection.
-	 *
-	 * @return the connection
-	 */
-	protected Connection getConnection() {
-		ConnectionFactory factory = ConnectionFactory.getInstance();
-		return factory.getConnection();
-	}
-	
-	/**
-	 * Check if the database is oracle
-	 * 
-	 * @return true if database is oracle.
-	 */
-	protected boolean isOracleDatabase() {
-		ConnectionFactory factory = ConnectionFactory.getInstance();
-		Connection connection = factory.getConnection();
-		return connection.getClass().getName().contains("oracle");
-	}
+    /**
+     * Gets the connection.
+     *
+     * @return the connection
+     */
+    protected Connection getConnection() {
+        ConnectionFactory factory = ConnectionFactory.getInstance();
+        return factory.getConnection();
+    }
+
+    /**
+     * Determine database type using database metadata product name.
+     *
+     * @return the string
+     * @throws HandlerException
+     *             the handler exception
+     */
+    protected String determineDatabaseType() throws HandlerException {
+        String dbName = null;
+        try (Connection conn = getConnection()) {
+            dbName = conn.getMetaData().getDatabaseProductName();
+        } catch (SQLException e) {
+            throw new HandlerException("Exception occured while getting DB Name",
+                    DatabaseAuditHandler.class, e);
+        }
+        return dbName;
+    }
+
+    /**
+     * Checks if is oracle database.
+     *
+     * @return true, if is oracle database
+     * @throws HandlerException
+     *             the handler exception
+     */
+    protected boolean isOracleDatabase() throws HandlerException {
+        String dbName = determineDatabaseType();
+        if (dbName == null) {
+            return false;
+        }
+        return "Oracle".equalsIgnoreCase(dbName);
+    }
+
+    /**
+     * Checks if is HSQL database.
+     *
+     * @return true, if is HSQL database
+     * @throws HandlerException
+     *             the handler exception
+     */
+    protected boolean isHSQLDatabase() throws HandlerException {
+        String dbName = determineDatabaseType();
+        if (dbName == null) {
+            return false;
+        }
+        return "HSQL Database Engine".equalsIgnoreCase(dbName);
+    }
 }

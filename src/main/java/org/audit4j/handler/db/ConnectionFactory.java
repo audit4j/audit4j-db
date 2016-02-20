@@ -166,7 +166,7 @@ final class ConnectionFactory {
                 config.setPoolName(CONNECTION_POOL_NAME);
                 config.setAutoCommit(autoCommit);
                 config.setMaximumPoolSize(maximumPoolSize);
-                config.setConnectionTestQuery("SELECT 1");
+              //  config.setConnectionTestQuery("SELECT 1");
                 
                 if (connectionTimeout != null) {
                     config.setConnectionTimeout(connectionTimeout);

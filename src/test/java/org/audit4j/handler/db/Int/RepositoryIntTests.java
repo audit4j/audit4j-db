@@ -12,7 +12,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TagsIntTests extends DBIntTestBase{
+public class RepositoryIntTests extends DBIntTestBase{
 
     DatabaseAuditHandler handler;
     
@@ -22,7 +22,7 @@ public class TagsIntTests extends DBIntTestBase{
     }
 
     @Test
-    public void testTestTag() {
+    public void testRepositoryTag() {
         handler = new DatabaseAuditHandler();
         handler.setSeparate(true);
         handler.init();
@@ -32,7 +32,7 @@ public class TagsIntTests extends DBIntTestBase{
         builder.addActor(actor).addAction("myMethod").addOrigin("Origin1").addField("myParam1Name", "param1")
                 .addField("myParam2Name", new Integer(2));
         AuditEvent event = builder.build();
-        event.setTag("test");
+        event.setRepository("test");
         
         handler.setAuditEvent(event);
         
@@ -45,13 +45,14 @@ public class TagsIntTests extends DBIntTestBase{
         
         List<String> tables = getTableList();
         assertTrue(tables.contains("TEST_AUDIT"));
+        System.out.println(getTableRecordCount("TEST_AUDIT"));
         
         System.out.println("sd");
         System.out.println(tables.toString());
     }
 
     @Test
-    public void testTestTagPrefixAndSuffix() {
+    public void testTestRepositoryPrefixAndSuffix() {
         
         handler = new DatabaseAuditHandler();
         handler.setSeparate(true);
@@ -64,7 +65,7 @@ public class TagsIntTests extends DBIntTestBase{
         builder.addActor(actor).addAction("myMethod").addOrigin("Origin1").addField("myParam1Name", "param1")
                 .addField("myParam2Name", new Integer(2));
         AuditEvent event = builder.build();
-        event.setTag("test");
+        event.setRepository("test");
         
         handler.setAuditEvent(event);
         
@@ -76,7 +77,11 @@ public class TagsIntTests extends DBIntTestBase{
         }
         
         List<String> tables = getTableList();
+        
+        System.out.println(tables.toString());
         assertTrue(tables.contains("TESTPREFIX_TEST_TESTSUFFIX"));
+        
+        System.out.println(getTableRecordCount("TESTPREFIX_TEST_TESTSUFFIX"));
         
         System.out.println("sd");
         System.out.println(tables.toString());

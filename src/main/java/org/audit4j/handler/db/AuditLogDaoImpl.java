@@ -43,7 +43,7 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
     AuditLogDaoImpl(String tableName) throws HandlerException {
         this.tableName = checkNotEmpty(tableName, "Table name must not be empty");
         this.insertQuery = "insert into " + tableName
-                + "(uuid, timestamp, actor, origin, action, elements) "
+                + "(identifier, timestamp, actor, origin, action, elements) "
                 + "values (?, ?, ?, ?, ?, ?)";
 
         createTableIfNotExists();
@@ -100,13 +100,25 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
                 }
                 if (result == false) {
                     query.append("create table ").append(tableName).append(" (")
+                            .append("identifier VARCHAR(200) NOT NULL,")
                             .append("timestamp TIMESTAMP NOT NULL,")
                             .append("actor VARCHAR2(200) NOT NULL,").append("origin VARCHAR2(200),")
                             .append("action VARCHAR2(200) NOT NULL,").append("elements CLOB")
                             .append(");");
                 }
+            } else if (isHSQLDatabase()) {
+                query.append("create table if not exists ").append(tableName).append(" (")
+                        .append("identifier VARCHAR(200) NOT NULL,")
+                        .append("timestamp TIMESTAMP NOT NULL,")
+                        .append("actor VARCHAR(200) NOT NULL,").append("origin VARCHAR(200),")
+                        .append("action VARCHAR(200) NOT NULL,").append("elements LONGVARCHAR")
+                        .append(");");
+                try (PreparedStatement statement = conn.prepareStatement(query.toString())) {
+                    result = statement.execute();
+                }
             } else {
                 query.append("create table if not exists ").append(tableName).append(" (")
+                        .append("identifier VARCHAR(200) NOT NULL,")
                         .append("timestamp TIMESTAMP NOT NULL,")
                         .append("actor VARCHAR(200) NOT NULL,").append("origin VARCHAR(200),")
                         .append("action VARCHAR(200) NOT NULL,").append("elements TEXT")

@@ -261,9 +261,9 @@ public class DatabaseAuditHandler extends Handler {
      */
     @Override
     public void handle() throws HandlerException {
-        String tag = getAuditEvent().getTag();
-        boolean writeInDefaultTable = !separate || tag == null;
-        String tableName = writeInDefaultTable ? default_table_name : generateTableName(tag);
+        String repository = getAuditEvent().getRepository();
+        boolean writeInDefaultTable = !separate || repository == null;
+        String tableName = writeInDefaultTable ? default_table_name : generateTableName(repository);
 
         getDaoForTable(tableName).writeEvent(getAuditEvent());
     }
@@ -282,14 +282,14 @@ public class DatabaseAuditHandler extends Handler {
     /**
      * Generate table name.
      *
-     * @param tag the tag
+     * @param repository
      * @return the string
      */
-    private String generateTableName(String tag) {
+    private String generateTableName(String repository) {
         if (table_prefix == null) {
-            return tag + "_" + table_suffix;
+            return repository + "_" + table_suffix;
         }
-        return table_prefix + "_" + tag + "_" + table_suffix;
+        return table_prefix + "_" + repository + "_" + table_suffix;
     }
 
     private AuditLogDao getDaoForTable(String tableName) throws HandlerException {

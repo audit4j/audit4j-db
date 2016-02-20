@@ -39,6 +39,32 @@ public class DBIntTestBase {
         
     }
     
+    public int getTableRecordCount(String table){
+        Connection connection = null;
+        Statement stmt = null;
+        int count = 0;
+        try {
+            Class.forName("org.hsqldb.jdbcDriver");
+            connection = DriverManager.getConnection("jdbc:hsqldb:file:audit4jdb", "audit4jdbuser", "audit4jdbpassword");
+            
+            stmt = connection.createStatement();
+
+            String sql = "SELECT COUNT(*) as total FROM " + table;
+            
+            ResultSet rs = stmt.executeQuery(sql);
+            while(rs.next()){
+                count = rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            throw new InitializationException("Could not initialize the connection", e);
+        } catch (ClassNotFoundException e) {
+            throw new InitializationException("Could not find the driver class", e);
+        }
+        
+        return count;
+        
+    }
+    
     public List<String> getTableList(){
         Connection connection = null;
         Statement stmt = null;
