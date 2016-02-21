@@ -65,7 +65,7 @@ final class HSQLEmbededDBServer extends EmbededDBServer {
             hsqlServer.setSilent(true);
             hsqlServer.setDatabaseName(0, EMBEDED_DB_NAME);
             hsqlServer.setDatabasePath(0, "file:" + EMBEDED_DB_FILE_NAME + ";user=" + getUname() + ";password="
-                    + getPassword() + "");
+                    + getPassword());
             hsqlServer.start();
         }
     }

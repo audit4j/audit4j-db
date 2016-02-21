@@ -23,6 +23,7 @@ import java.sql.SQLException;
 
 import org.audit4j.core.exception.HandlerException;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class AuditBaseDao.
  *
@@ -86,5 +87,19 @@ class AuditBaseDao {
             return false;
         }
         return "HSQL Database Engine".equalsIgnoreCase(dbName);
+    }
+
+    /**
+     * Checks if the database is MySQL.
+     *
+     * @return true, if is my sql database
+     * @throws HandlerException the handler exception
+     */
+    protected boolean isMySQLDatabase() throws HandlerException {
+        String dbName = determineDatabaseType();
+        if (dbName == null) {
+            return false;
+        }
+        return "MySQL".equalsIgnoreCase(dbName);
     }
 }
