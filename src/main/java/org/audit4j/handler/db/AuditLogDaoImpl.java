@@ -117,7 +117,7 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
                 }
                 if (result == false) {
                     query.append("create table ").append(tableName).append(" (")
-                            .append("identifier VARCHAR(200) NOT NULL,")
+                            .append("identifier VARCHAR2(200) NOT NULL,")
                             .append("timestamp TIMESTAMP NOT NULL,")
                             .append("actor VARCHAR2(200) NOT NULL,").append("origin VARCHAR2(200),")
                             .append("action VARCHAR2(200) NOT NULL,").append("elements CLOB")
