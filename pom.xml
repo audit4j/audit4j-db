@@ -51,7 +51,7 @@
 	</parent>
 
 	<properties>
-		<audit4j.version>2.4.0</audit4j.version>
+		<audit4j.version>2.4.1-RC1</audit4j.version>
 	</properties>
 
 	<dependencies>
