@@ -8,11 +8,9 @@ import org.junit.Test;
 
 public class ConnectionPoolIntTest extends DBIntTestBase {
 
-    DatabaseAuditHandler handler;
-
     @Test
     public void testConnectionPoolNormal() {
-        handler = new DatabaseAuditHandler();
+        DatabaseAuditHandler handler = new DatabaseAuditHandler();
         handler.setEmbedded("true");
         handler.setDb_connection_type("pooled");
         handler.setDb_datasourceClass("org.hsqldb.jdbc.JDBCDataSource");
@@ -31,11 +29,13 @@ public class ConnectionPoolIntTest extends DBIntTestBase {
             e.printStackTrace();
         }
         Assert.assertNotNull(getAuditTableRecordCount());
+        System.out.println("stopping handler");
+        handler.stop();
     }
 
     @Test
     public void testConnectionPoolConnections() {
-        handler = new DatabaseAuditHandler();
+        DatabaseAuditHandler handler = new DatabaseAuditHandler();
         handler.setEmbedded("true");
         handler.setDb_connection_type("pooled");
         handler.setDb_datasourceClass("org.hsqldb.jdbc.JDBCDataSource");
@@ -63,11 +63,13 @@ public class ConnectionPoolIntTest extends DBIntTestBase {
             e.printStackTrace();
         }
         Assert.assertNotNull(getAuditTableRecordCount());
+        System.out.println("stopping handler");
+        handler.stop();
     }
     
     @Test
     public void testConnectionPoolParams() {
-        handler = new DatabaseAuditHandler();
+        DatabaseAuditHandler handler = new DatabaseAuditHandler();
         handler.setEmbedded("true");
         handler.setDb_connection_type("pooled");
         handler.setDb_datasourceClass("org.hsqldb.jdbc.JDBCDataSource");
@@ -92,11 +94,12 @@ public class ConnectionPoolIntTest extends DBIntTestBase {
             e.printStackTrace();
         }
         Assert.assertNotNull(getAuditTableRecordCount());
+        System.out.println("stopping handler");
+        handler.stop();
     }
 
 
     public void after() {
-        System.out.println("stopping handler");
-        handler.stop();
+        
     }
 }

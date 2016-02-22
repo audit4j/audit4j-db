@@ -5,7 +5,8 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ DBHandlerEmbededInitIntTest.class, DBHandlerEmbededHandleIntTest.class })
+@SuiteClasses({ ConnectionPoolIntTest.class, DBHandlerEmbededInitIntTest.class,
+        DBHandlerEmbededHandleIntTest.class, RepositoryIntTests.class })
 public class IntegrationTestSuite {
 
 }
