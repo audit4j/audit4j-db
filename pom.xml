@@ -1,3 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Copyright (c) 2014-2016 Janith Bandara, This source is a part of -->
+<!-- Audit4j - An open source auditing framework. -->
+<!-- http://audit4j.org -->
+<!-- -->
+<!-- Licensed under the Apache License, Version 2.0 (the "License"); -->
+<!-- you may not use this file except in compliance with the License. -->
+<!-- You may obtain a copy of the License at -->
+<!-- -->
+<!-- http://www.apache.org/licenses/LICENSE-2.0 -->
+<!-- -->
+<!-- Unless required by applicable law or agreed to in writing, software -->
+<!-- distributed under the License is distributed on an "AS IS" BASIS, -->
+<!-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. -->
+<!-- See the License for the specific language governing permissions and -->
+<!-- limitations under the License. -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -5,30 +23,14 @@
 	<artifactId>audit4j-db</artifactId>
 	<packaging>jar</packaging>
 	<name>Audit4j - Database Handler</name>
-	<version>2.4.1-RC2</version>
+	<version>2.4.1</version>
 	<url>http://audit4j.org</url>
 	<description>Audit4j - An open-source auditing framework, Database handler</description>
 	<organization>
 		<name>Audit4j</name>
 		<url>http://audit4j.org</url>
 	</organization>
-	<licenses>
-		<license>
-			<name>The Apache Software License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<issueManagement>
-		<system>github</system>
-		<url>https://github.com/audit4j/audit4j-core/issues</url>
-	</issueManagement>
-	<scm>
-		<connection>scm:git:git@github.com:audit4j/audit4j-db.git</connection>
-		<developerConnection>scm:git:git@github.com:audit4j/audit4j-db.git</developerConnection>
-		<url>scm:git:git@github.com:audit4j/audit4j-db.git</url>
-		<tag>2.4.0</tag>
-	</scm>
+
 	<developers>
 		<developer>
 			<id>janith</id>
@@ -37,65 +39,37 @@
 			<organizationUrl>http://audit4j.org</organizationUrl>
 			<email>janith@audit4j.org</email>
 			<roles>
-				<role>owner</role>
-				<role>developer</role>
+				<role>Project Administrator</role>
+				<role>Developer</role>
 			</roles>
 			<timezone>+05:30</timezone>
 		</developer>
 	</developers>
-	
-	<properties>
-		<audit4j.version>2.4.1-RC1</audit4j.version>
-	</properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
-			<version>2.5</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<version>2.5</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.16</version>
-			<scope>test</scope>
-		</dependency>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
-		<dependency>
-			<groupId>org.audit4j</groupId>
-			<artifactId>audit4j-core</artifactId>
-			<version>${audit4j.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.zaxxer</groupId>
-			<artifactId>HikariCP</artifactId>
-			<version>2.4.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<version>2.3.3</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>19.0</version>
-		</dependency>
-	</dependencies>
+	<issueManagement>
+		<system>github</system>
+		<url>https://github.com/audit4j/audit4j-core/issues</url>
+	</issueManagement>
+
+	<scm>
+		<connection>scm:git:git@github.com:audit4j/audit4j-db.git</connection>
+		<developerConnection>scm:git:git@github.com:audit4j/audit4j-db.git</developerConnection>
+		<url>scm:git:git@github.com:audit4j/audit4j-db.git</url>
+		<tag>2.4.0</tag>
+	</scm>
+
+	<ciManagement>
+		<system>travis-ci</system>
+		<url>https://travis-ci.org/audit4j/audit4j-db</url>
+	</ciManagement>
 
 	<distributionManagement>
 		<repository>
@@ -108,6 +82,67 @@
 		</snapshotRepository>
 	</distributionManagement>
 
+	<properties>
+		<audit4j.version>2.4.1</audit4j.version>
+		<junit.version>4.12</junit.version>
+		<log4j.version>2.5</log4j.version>
+		<slf4j-log4j12.version>1.7.16</slf4j-log4j12.version>
+		<hikaricp.version>2.4.3</hikaricp.version>
+		<hsqldb.version>2.3.3</hsqldb.version>
+		<guava.version>19.0</guava.version>
+	</properties>
+
+	<dependencies>
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j-log4j12.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Project dependencies -->
+		<dependency>
+			<groupId>org.audit4j</groupId>
+			<artifactId>audit4j-core</artifactId>
+			<version>${audit4j.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<version>${hikaricp.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>${hsqldb.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+	</dependencies>
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -157,6 +192,10 @@
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 						</manifest>
+						<manifestEntries>
+							<url>${project.url}</url>
+							<copyright>2014-2016 Janith Bandara</copyright>
+						</manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
