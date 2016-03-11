@@ -106,7 +106,7 @@ class AuditBaseDao {
     /**
      * Checks if is SQLServer database.
      *
-     * @return true, if is oracle database
+     * @return true, if is sqlserver database
      * @throws HandlerException
      *             the handler exception
      */
