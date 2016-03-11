@@ -145,6 +145,19 @@ final class AuditLogDaoImpl extends AuditBaseDao implements AuditLogDao {
                 try (PreparedStatement statement = conn.prepareStatement(query.toString())) {
                     result = statement.execute();
                 }
+            } else if (isSQLServerDatabase()) {
+                // Create table if SQLServer database
+            	query.append(" IF OBJECT_ID(N'"+tableName+"', N'U') IS NULL BEGIN ");
+                query.append("create table ").append(tableName).append(" (")
+                        .append("identifier VARCHAR(200) NOT NULL,")
+                        .append("timestamp DATETIME NOT NULL,")
+                        .append("actor VARCHAR(200) NOT NULL,").append("origin VARCHAR(200),")
+                        .append("action VARCHAR(200) NOT NULL,").append("elements TEXT")
+                        .append(");");
+                query.append(" END ");
+                try (PreparedStatement statement = conn.prepareStatement(query.toString())) {
+                    result = statement.execute();
+                }
             } else {
                 query.append("create table if not exists ").append(tableName).append(" (")
                         .append("identifier VARCHAR(200) NOT NULL,")
