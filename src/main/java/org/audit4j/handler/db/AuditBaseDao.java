@@ -102,4 +102,19 @@ class AuditBaseDao {
         }
         return "MySQL".equalsIgnoreCase(dbName);
     }
+    
+    /**
+     * Checks if is SQLServer database.
+     *
+     * @return true, if is sqlserver database
+     * @throws HandlerException
+     *             the handler exception
+     */
+    protected boolean isSQLServerDatabase() throws HandlerException {
+        String dbName = determineDatabaseType();
+        if (dbName == null) {
+            return false;
+        }
+        return "Microsoft SQL Server".equalsIgnoreCase(dbName);
+    }
 }
