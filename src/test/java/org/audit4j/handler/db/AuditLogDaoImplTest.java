@@ -11,6 +11,7 @@ import java.sql.SQLException;
 
 public class AuditLogDaoImplTest {
     static String ANY_TABLE_NAME = "any_table";
+    static String ANY_SCHEMA_NAME = "";
 
     EmbededDBServer server;
     ConnectionFactory connectionFactory;
@@ -33,13 +34,13 @@ public class AuditLogDaoImplTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void it_should_throw_error_on_invalid_table_name() throws HandlerException, SQLException {
-        AuditLogDao logDao = new AuditLogDaoImpl("");
+        AuditLogDao logDao = new AuditLogDaoImpl("", "");
         Assert.fail("Should have thrown exception");
     }
 
     @Test
     public void testcreateAuditTableIFNotExist() throws HandlerException, SQLException {
-        AuditLogDao logDao = new AuditLogDaoImpl(ANY_TABLE_NAME);
+        AuditLogDao logDao = new AuditLogDaoImpl(ANY_TABLE_NAME, ANY_SCHEMA_NAME);
         Assert.assertNotNull(logDao);
     }
 
@@ -48,12 +49,12 @@ public class AuditLogDaoImplTest {
         String actor = "Dummy Actor";
         EventBuilder builder = new EventBuilder();
         builder.addActor(actor)
-                .addAction("myMethod")
-                .addOrigin("Origin1")
-                .addField("myParam1Name", "param1")
-                .addField("myParam2Name", 2);
+          .addAction("myMethod")
+          .addOrigin("Origin1")
+          .addField("myParam1Name", "param1")
+          .addField("myParam2Name", 2);
 
-        AuditLogDao logDao = new AuditLogDaoImpl(ANY_TABLE_NAME);
+        AuditLogDao logDao = new AuditLogDaoImpl(ANY_TABLE_NAME, ANY_SCHEMA_NAME);
 
         logDao.writeEvent(builder.build());
     }

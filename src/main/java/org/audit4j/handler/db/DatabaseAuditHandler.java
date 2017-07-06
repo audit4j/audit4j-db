@@ -55,14 +55,14 @@ public class DatabaseAuditHandler extends Handler {
      * Creating cache for Data access objects for different tables.
      */
     private final LoadingCache<String, AuditLogDao> daos = CacheBuilder.newBuilder()
-            .maximumSize(1000)
-            .expireAfterAccess(15, TimeUnit.MINUTES)
-            .build(new CacheLoader<String, AuditLogDao>() {
-                @Override
-                public AuditLogDao load(String tableName) throws HandlerException {
-                    return new AuditLogDaoImpl(tableName);
-                }
-            });
+      .maximumSize(1000)
+      .expireAfterAccess(15, TimeUnit.MINUTES)
+      .build(new CacheLoader<String, AuditLogDao>() {
+          @Override
+          public AuditLogDao load(String tableName) throws HandlerException {
+              return new AuditLogDaoImpl(tableName, schema);
+          }
+      });
     /**
      * The embeded.
      */
@@ -179,6 +179,11 @@ public class DatabaseAuditHandler extends Handler {
     private String default_table_name = DEFAULT_TABLE_NAME;
 
     /**
+     * The default_table_suffix.
+     */
+    private String schema ;
+
+    /**
      * Instantiates a new database audit handler.
      */
     public DatabaseAuditHandler() {
@@ -193,7 +198,7 @@ public class DatabaseAuditHandler extends Handler {
     public void init() throws InitializationException {
         if (null == embedded || "true".equalsIgnoreCase(embedded)) {
             Log.warn("Audit4j Database Handler runs on embedded mode. See " + ErrorGuide.ERROR_URL
-                    + "embeddeddb for further details.");
+              + "embeddeddb for further details.");
             server = HSQLEmbededDBServer.getInstance();
             db_driver = server.getDriver();
             db_url = server.getNetworkProtocol() + ":file:audit4jdb";
@@ -536,4 +541,55 @@ public class DatabaseAuditHandler extends Handler {
         this.db_datasourceClass = db_datasourceClass;
     }
 
+    public String getTable_suffix() {
+        return table_suffix;
+    }
+
+    public String getTable_prefix() {
+        return table_prefix;
+    }
+
+    public String getDefault_table_name() {
+        return default_table_name;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
+
+    public boolean getSeparate() {
+        return separate;
+    }
+
+    public boolean getDb_pool_autoCommit() {
+        return db_pool_autoCommit;
+    }
+
+    public Long getDb_pool_connectionTimeout() {
+        return db_pool_connectionTimeout;
+    }
+
+    public Integer getDb_pool_idleTimeout() {
+        return db_pool_idleTimeout;
+    }
+
+    public Integer getDb_pool_maxLifetime() {
+        return db_pool_maxLifetime;
+    }
+
+    public Integer getDb_pool_minimumIdle() {
+        return db_pool_minimumIdle;
+    }
+
+    public Integer getDb_pool_maximumPoolSize() {
+        return db_pool_maximumPoolSize;
+    }
+
+    public String getDb_datasourceClass() {
+        return db_datasourceClass;
+    }
 }
